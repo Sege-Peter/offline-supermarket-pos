@@ -5,6 +5,71 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Supermarket POS Terminal - Lane 01</title>
   <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .pos-action-bar {
+      padding: 8px 20px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .pos-mini-btn {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+    .pos-mini-btn:hover {
+      background: var(--border);
+      border-color: var(--accent-blue);
+    }
+    /* Catalog Modal Grid */
+    .catalog-modal-content {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      width: 750px;
+      max-width: 95vw;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      color: var(--text-primary);
+    }
+    .catalog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+      padding: 16px;
+      overflow-y: auto;
+    }
+    .catalog-item-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+    .catalog-item-card:hover {
+      border-color: var(--accent-green);
+      transform: translateY(-2px);
+    }
+  </style>
 </head>
 <body>
 
@@ -12,18 +77,21 @@
   <header class="top-bar">
     <div class="brand-section">
       <span class="brand-icon">🛒</span>
-      <div class="brand-title">METRO<span>POS</span> <small style="font-weight: 400; color: var(--text-muted); font-size: 0.75rem;">Lane 01</small></div>
+      <div class="brand-title">METRO<span>POS</span> <small style="font-weight: 400; color: var(--text-muted); font-size: 0.75rem;">Lane 01 Terminal</small></div>
     </div>
 
     <div class="system-status">
-      <span class="badge badge-online">● Online</span>
+      <span class="badge badge-online">● Lane Online</span>
       <span class="badge badge-db">DB: {{ db_type }}</span>
       <span style="color: var(--text-secondary); font-family: var(--font-mono); font-size: 0.8rem;" id="liveClock">--:--:--</span>
     </div>
 
     <nav class="nav-links">
-      <a href="/" class="nav-btn active">Desktop Terminal</a>
-      <a href="/mobile" class="nav-btn">📷 Mobile Scanner</a>
+      <a href="/" class="nav-btn active">Desktop Lane</a>
+      <a href="/mobile" class="nav-btn">📷 Scanner</a>
+      <a href="/dashboard" class="nav-btn">📊 Dashboard</a>
+      <a href="/inventory" class="nav-btn">📦 Inventory</a>
+      <a href="/reports" class="nav-btn">📜 Reports</a>
     </nav>
   </header>
 
@@ -34,9 +102,20 @@
     <button class="demo-chip" onclick="lookupBarcode('041520000102')">🍞 Bread ($2.20)</button>
     <button class="demo-chip" onclick="lookupBarcode('4011')">🍌 Bananas (kg)</button>
     <button class="demo-chip" onclick="lookupBarcode('078742351864')">🍚 Basmati Rice ($5.50)</button>
-    <button class="demo-chip" onclick="lookupBarcode('049000028904')">🥤 Coke 330ml ($1.25)</button>
-    <button class="demo-chip" onclick="lookupBarcode('021130004928')">🍗 Chicken (kg)</button>
+    <button class="demo-chip" onclick="lookupBarcode('049000028904')">🥤 Coke ($1.25)</button>
+    <button class="demo-chip" onclick="lookupBarcode('021130004928')">🍗 Chicken ($7.90/kg)</button>
     <button class="demo-chip" onclick="lookupBarcode('011110824106')">🥚 Eggs 12pk ($3.40)</button>
+    <button class="demo-chip" onclick="lookupBarcode('4065')">🫑 Peppers (kg)</button>
+  </div>
+
+  <!-- Cashier Ergonomic Action Bar -->
+  <div class="pos-action-bar">
+    <button class="pos-mini-btn" onclick="openCatalogModal()">📋 PLU Catalog (F4)</button>
+    <button class="pos-mini-btn" onclick="triggerWeighedItemPrompt()">⚖️ Produce Scale (F8)</button>
+    <button class="pos-mini-btn" onclick="openHoldModal()">⏸️ Park / Hold Cart</button>
+    <button class="pos-mini-btn" onclick="openRecallModal()">▶️ Recall Cart (<span id="heldCount">0</span>)</button>
+    <button class="pos-mini-btn" onclick="openDiscountPrompt()">🏷️ Coupon / Discount</button>
+    <button class="pos-mini-btn" onclick="kickCashDrawer()">⚡ Cash Drawer (Kick)</button>
   </div>
 
   <!-- Main POS Workspace -->
@@ -51,20 +130,19 @@
             type="text" 
             id="barcodeInput" 
             class="barcode-input" 
-            placeholder="Scan Barcode / Enter PLU + Press Enter..." 
+            placeholder="Scan Barcode / Enter PLU Code + Press Enter..." 
             autofocus 
             autocomplete="off"
           >
         </div>
         <button class="tool-btn" onclick="triggerManualLookup()" title="Lookup Code">Enter</button>
-        <button class="tool-btn" onclick="triggerWeighedItemPrompt()" title="Scale Weigh (F8)">⚖️ Weighed (F8)</button>
       </div>
 
       <div class="cart-table-wrap">
         <div id="cartEmpty" class="cart-empty">
           <div class="empty-icon">🛒</div>
           <h3>Lane Register Ready</h3>
-          <p>Scan a product barcode or tap a quick-test item above to begin.</p>
+          <p>Scan a product barcode or tap any quick-test item above to begin.</p>
         </div>
 
         <table class="cart-table">
@@ -94,6 +172,10 @@
           <div class="summary-row">
             <span>Subtotal:</span>
             <span id="subtotalLabel" style="font-family: var(--font-mono); font-weight: 600;">$0.00</span>
+          </div>
+          <div id="discountRow" class="summary-row" style="display: none; color: var(--accent-amber);">
+            <span>Discount:</span>
+            <span id="discountLabel" style="font-family: var(--font-mono); font-weight: 600;">-$0.00</span>
           </div>
           <div class="summary-row">
             <span>Sales Tax (8%):</span>
@@ -146,12 +228,37 @@
     </aside>
   </main>
 
+  <!-- Visual PLU Catalog Modal (F4) -->
+  <div id="catalogModal" class="modal-backdrop">
+    <div class="catalog-modal-content">
+      <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 1.2rem;">Visual Product Catalog & PLU Lookup</h3>
+        <button onclick="closeCatalogModal()" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+      <div style="padding: 10px 16px; border-bottom: 1px solid var(--border);">
+        <input type="text" id="modalSearchInput" class="payment-input" placeholder="Filter items by name or PLU code..." oninput="filterModalCatalog()" style="margin: 0;">
+      </div>
+      <div id="catalogGridBody" class="catalog-grid"></div>
+    </div>
+  </div>
+
+  <!-- Held Carts Recall Modal -->
+  <div id="recallModal" class="modal-backdrop">
+    <div class="form-modal" style="width: 550px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
+        <h3>Parked / Held Transactions</h3>
+        <button onclick="closeRecallModal()" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+      <div id="heldListBody" style="display: flex; flex-direction: column; gap: 10px; max-height: 50vh; overflow-y: auto;">
+        <div style="color: var(--text-muted); text-align: center; padding: 20px;">No held carts currently.</div>
+      </div>
+    </div>
+  </div>
+
   <!-- Thermal Receipt Modal -->
   <div id="receiptModal" class="modal-backdrop">
     <div class="receipt-modal-content">
-      <div id="receiptPaper" class="receipt-paper">
-        <!-- Rendered dynamically -->
-      </div>
+      <div id="receiptPaper" class="receipt-paper"></div>
       <div class="receipt-actions">
         <button class="btn-print" onclick="printThermalReceipt()">🖨️ Print (ESC/POS)</button>
         <button class="btn-close" onclick="closeReceiptModal()">Close (Esc)</button>
@@ -161,7 +268,9 @@
 
   <script src="/static/js/pos-engine.js"></script>
   <script>
-    // Live Clock
+    let activeDiscount = 0.0;
+    let catalogCache = [];
+
     function updateClock() {
       const now = new Date();
       document.getElementById('liveClock').innerText = now.toLocaleTimeString();
@@ -169,7 +278,6 @@
     setInterval(updateClock, 1000);
     updateClock();
 
-    // Barcode scanner trigger on Enter key
     const barcodeInput = document.getElementById('barcodeInput');
     barcodeInput.addEventListener('keypress', (e) => {
       if (e.key === 'Enter') {
@@ -190,6 +298,200 @@
       const code = prompt('Enter Produce PLU Code (e.g., 4011 for Bananas, 4065 for Bell Peppers, 4131 for Apples):', '4011');
       if (code) lookupBarcode(code);
     }
+
+    // Visual Catalog Modal (F4)
+    async function openCatalogModal() {
+      const modal = document.getElementById('catalogModal');
+      modal.classList.add('active');
+      if (catalogCache.length === 0) {
+        try {
+          const res = await fetch('/api/products');
+          const data = await res.json();
+          if (data.success) {
+            catalogCache = data.products;
+          }
+        } catch (e) {
+          catalogCache = Object.values(OFFLINE_SEED_CATALOG);
+        }
+      }
+      renderCatalogGrid(catalogCache);
+    }
+
+    function closeCatalogModal() {
+      document.getElementById('catalogModal').classList.remove('active');
+      barcodeInput.focus();
+    }
+
+    function renderCatalogGrid(items) {
+      const grid = document.getElementById('catalogGridBody');
+      grid.innerHTML = '';
+      items.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'catalog-item-card';
+        div.onclick = () => {
+          lookupBarcode(p.barcode);
+          closeCatalogModal();
+        };
+        div.innerHTML = `
+          <strong style="font-size: 0.9rem;">${escapeHtml(p.name)}</strong>
+          <small style="color: var(--text-muted); font-family: var(--font-mono);">${p.barcode}</small>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+            <span style="color: var(--accent-green); font-weight: 800; font-family: var(--font-mono);">$${parseFloat(p.price).toFixed(2)}</span>
+            <span style="font-size: 0.75rem; color: var(--text-secondary);">${p.is_weighed ? '⚖️ kg' : '🏷️ ea'}</span>
+          </div>
+        `;
+        grid.appendChild(div);
+      });
+    }
+
+    function filterModalCatalog() {
+      const q = document.getElementById('modalSearchInput').value.toLowerCase().trim();
+      const filtered = catalogCache.filter(p => !q || p.name.toLowerCase().includes(q) || p.barcode.includes(q));
+      renderCatalogGrid(filtered);
+    }
+
+    // Park / Hold Cart
+    async function openHoldModal() {
+      if (cart.length === 0) return alert('Cart is empty, cannot park transaction.');
+      const note = prompt('Enter a label or customer note for this parked cart:', 'Customer fetching card');
+      if (note !== null) {
+        try {
+          const res = await fetch('/api/hold', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cart: cart, note: note })
+          });
+          const data = await res.json();
+          if (data.success) {
+            alert(`Cart parked: ${data.hold_reference}`);
+            cart = [];
+            renderCart();
+            updateHeldBadge();
+          }
+        } catch (e) {
+          alert('Could not park cart offline');
+        }
+      }
+    }
+
+    // Recall Held Cart
+    async function openRecallModal() {
+      try {
+        const res = await fetch('/api/held-carts');
+        const data = await res.json();
+        const list = document.getElementById('heldListBody');
+        list.innerHTML = '';
+
+        if (data.success && data.held_carts && data.held_carts.length > 0) {
+          data.held_carts.forEach(h => {
+            const row = document.createElement('div');
+            row.style.cssText = "background: var(--bg-card); padding: 12px; border-radius: var(--radius-md); display: flex; justify-content: space-between; align-items: center;";
+            row.innerHTML = `
+              <div>
+                <strong>${escapeHtml(h.hold_reference)}</strong> - ${escapeHtml(h.customer_note)}<br>
+                <small style="color: var(--text-muted);">${h.item_count} items • $${h.subtotal.toFixed(2)}</small>
+              </div>
+              <button class="btn-pay" style="padding: 8px 14px; font-size: 0.85rem;" onclick="recallSpecificCart(${h.id})">Recall</button>
+            `;
+            list.appendChild(row);
+          });
+        } else {
+          list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No held carts currently.</div>';
+        }
+        document.getElementById('recallModal').classList.add('active');
+      } catch (e) {
+        alert('Could not load held carts');
+      }
+    }
+
+    async function recallSpecificCart(id) {
+      if (cart.length > 0 && !confirm('Active cart is not empty. Overwrite with recalled cart?')) {
+        return;
+      }
+      try {
+        const res = await fetch(`/api/recall/${id}`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          cart = data.cart;
+          renderCart();
+          closeRecallModal();
+          updateHeldBadge();
+          showToast(`Recalled cart: ${data.reference}`, "success");
+        }
+      } catch (e) {
+        alert('Error recalling cart');
+      }
+    }
+
+    function closeRecallModal() {
+      document.getElementById('recallModal').classList.remove('active');
+      barcodeInput.focus();
+    }
+
+    async function updateHeldBadge() {
+      try {
+        const res = await fetch('/api/held-carts');
+        const data = await res.json();
+        if (data.success && data.held_carts) {
+          document.getElementById('heldCount').innerText = data.held_carts.length;
+        }
+      } catch (e) {}
+    }
+    updateHeldBadge();
+
+    // Discount Code
+    function openDiscountPrompt() {
+      const code = prompt('Enter Discount or Coupon Code (e.g. SAVE10 for $10 off, 5OFF for $5 off):', 'SAVE10');
+      if (code) {
+        const c = code.toUpperCase().trim();
+        if (c === 'SAVE10' || c === '10OFF') {
+          activeDiscount = 10.0;
+        } else if (c === '5OFF') {
+          activeDiscount = 5.0;
+        } else if (!isNaN(parseFloat(c))) {
+          activeDiscount = parseFloat(c);
+        } else {
+          alert('Invalid promo code');
+          return;
+        }
+        applyDiscountToView();
+      }
+    }
+
+    function applyDiscountToView() {
+      const dRow = document.getElementById('discountRow');
+      const dLabel = document.getElementById('discountLabel');
+      if (activeDiscount > 0) {
+        dRow.style.display = 'flex';
+        dLabel.innerText = `-$${activeDiscount.toFixed(2)}`;
+      } else {
+        dRow.style.display = 'none';
+      }
+      renderCart();
+    }
+
+    // Cash Drawer Kick
+    async function kickCashDrawer() {
+      try {
+        await fetch('/api/hardware/drawer', { method: 'POST' });
+        playBeep(880, 0.1);
+        showToast('⚡ Cash Drawer kick solenoid triggered!', 'info');
+      } catch (e) {
+        showToast('Cash drawer kicked', 'info');
+      }
+    }
+
+    // Keyboard Shortcuts (F4, F8)
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'F4') {
+        e.preventDefault();
+        openCatalogModal();
+      }
+      if (e.key === 'F8') {
+        e.preventDefault();
+        triggerWeighedItemPrompt();
+      }
+    });
   </script>
 </body>
 </html>

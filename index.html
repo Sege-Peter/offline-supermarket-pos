@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Offline Supermarket POS - Live Web Terminal</title>
+  <title>Offline Supermarket POS - Full-Stack Enterprise Terminal</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>">
   <!-- HTML5 QR & Barcode Scanner CDN -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -58,7 +58,7 @@
     }
 
     .brand-title {
-      font-size: 1.2rem;
+      font-size: 1.25rem;
       font-weight: 800;
       letter-spacing: -0.5px;
     }
@@ -176,6 +176,37 @@
     .demo-chip:hover {
       border-color: var(--accent-blue);
       color: var(--text-primary);
+    }
+
+    /* Cashier Action Bar */
+    .pos-action-bar {
+      padding: 8px 20px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .pos-mini-btn {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+
+    .pos-mini-btn:hover {
+      background: var(--border);
+      border-color: var(--accent-blue);
     }
 
     .scan-bar {
@@ -314,7 +345,7 @@
 
     .btn-checkout:hover { background: var(--accent-green-hover); }
 
-    /* Receipt Modal */
+    /* Modals */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -359,42 +390,75 @@
       gap: 10px;
     }
 
-    @media print {
-      body * { visibility: hidden; }
-      .receipt-paper, .receipt-paper * { visibility: visible; }
-      .receipt-paper {
-        position: absolute; left: 0; top: 0; width: 80mm; margin: 0; padding: 4mm;
-      }
-    }
-
-    /* Architecture Tab Styling */
-    .arch-container {
-      padding: 30px 40px;
-      max-width: 1100px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-      width: 100%;
-    }
-
-    .arch-card {
+    .form-modal {
       background: var(--bg-panel);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
+      width: 500px;
+      max-width: 90vw;
       padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      color: var(--text-primary);
     }
 
-    .code-box {
-      background: var(--bg-input);
+    .catalog-modal-content {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      width: 750px;
+      max-width: 95vw;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      color: var(--text-primary);
+    }
+
+    .catalog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+      padding: 16px;
+      overflow-y: auto;
+    }
+
+    .catalog-item-card {
+      background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: var(--radius-md);
-      padding: 16px;
-      font-family: var(--font-mono);
-      font-size: 0.85rem;
-      color: #38bdf8;
-      overflow-x: auto;
-      margin-top: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .catalog-item-card:hover { border-color: var(--accent-green); transform: translateY(-2px); }
+
+    /* Dashboard & Z-Report Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    @media print {
+      body * { visibility: hidden; }
+      .receipt-paper, .receipt-paper * { visibility: visible; }
+      .receipt-paper { position: absolute; left: 0; top: 0; width: 80mm; margin: 0; padding: 4mm; }
     }
 
     @media (max-width: 900px) {
@@ -416,18 +480,20 @@
     </div>
 
     <div class="header-badges">
-      <span class="badge badge-green">● Lane Online</span>
-      <span class="badge badge-blue">Atomic MySQL / SQLite</span>
+      <span class="badge badge-green">● Terminal Active</span>
+      <span class="badge badge-blue">Atomic Transactions</span>
       <span class="badge badge-amber" id="clockLabel">--:--:--</span>
     </div>
   </header>
 
   <!-- Navigation Tabs -->
   <nav class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('terminal')">💻 Lane Register Terminal</button>
-    <button class="tab-btn" onclick="switchTab('camera')">📷 Phone Camera Scanner</button>
+    <button class="tab-btn active" onclick="switchTab('terminal')">💻 Lane Register</button>
+    <button class="tab-btn" onclick="switchTab('camera')">📷 Mobile Scanner</button>
+    <button class="tab-btn" onclick="switchTab('dashboard')">📊 Manager Dashboard</button>
     <button class="tab-btn" onclick="switchTab('catalog')">📦 Inventory & Stock</button>
-    <button class="tab-btn" onclick="switchTab('history')">📜 Sales History & Sync Log</button>
+    <button class="tab-btn" onclick="switchTab('history')">📜 Sales History</button>
+    <button class="tab-btn" onclick="switchTab('zreport')">🖨️ Z-Report Balancing</button>
     <button class="tab-btn" onclick="switchTab('architecture')">🏛️ System Architecture</button>
   </nav>
 
@@ -437,18 +503,27 @@
     <!-- TAB 1: DESKTOP POS TERMINAL -->
     <div id="tab-terminal" class="tab-panel active">
       <div class="pos-grid">
-        <!-- Left 70%: Register Lane -->
         <div class="lane-left">
-          <!-- Quick Barcode Pills -->
+          <!-- Quick Barcode Helper Bar -->
           <div class="demo-barcodes">
-            <strong style="color: var(--text-muted); text-transform: uppercase;">Quick Test Items:</strong>
+            <strong style="color: var(--text-muted); text-transform: uppercase;">Quick Items:</strong>
             <button class="demo-chip" onclick="scanBarcode('011110417001')">🥛 Milk ($1.50)</button>
             <button class="demo-chip" onclick="scanBarcode('041520000102')">🍞 Bread ($2.20)</button>
             <button class="demo-chip" onclick="scanBarcode('4011')">🍌 Bananas (kg)</button>
-            <button class="demo-chip" onclick="scanBarcode('078742351864')">🍚 Basmati Rice ($5.50)</button>
+            <button class="demo-chip" onclick="scanBarcode('078742351864')">🍚 Basmati ($5.50)</button>
             <button class="demo-chip" onclick="scanBarcode('049000028904')">🥤 Coke ($1.25)</button>
             <button class="demo-chip" onclick="scanBarcode('021130004928')">🍗 Chicken ($7.90/kg)</button>
             <button class="demo-chip" onclick="scanBarcode('011110824106')">🥚 Eggs ($3.40)</button>
+          </div>
+
+          <!-- Cashier Ergonomic Action Bar -->
+          <div class="pos-action-bar">
+            <button class="pos-mini-btn" onclick="openCatalogModal()">📋 PLU Catalog (F4)</button>
+            <button class="pos-mini-btn" onclick="promptScaleItem()">⚖️ Produce Scale (F8)</button>
+            <button class="pos-mini-btn" onclick="parkActiveCart()">⏸️ Park / Hold Cart</button>
+            <button class="pos-mini-btn" onclick="openRecallModal()">▶️ Recall Cart (<span id="heldCountBadge">0</span>)</button>
+            <button class="pos-mini-btn" onclick="promptDiscount()">🏷️ Coupon / Discount</button>
+            <button class="pos-mini-btn" onclick="triggerDrawerKick()">⚡ Cash Drawer</button>
           </div>
 
           <!-- Scanner Bar -->
@@ -457,12 +532,11 @@
               type="text" 
               id="barcodeInput" 
               class="scan-input" 
-              placeholder="Scan Barcode / PLU Code + Enter (e.g. 011110417001 or 4011)..." 
+              placeholder="Scan Barcode / Enter PLU + Press Enter..." 
               autofocus 
               autocomplete="off"
             >
             <button class="btn-action" onclick="handleScanSubmit()">Lookup</button>
-            <button class="btn-action" onclick="promptScaleItem()">⚖️ Weighed Item (F8)</button>
           </div>
 
           <!-- Cart Table -->
@@ -500,6 +574,10 @@
               <div class="summary-row">
                 <span>Subtotal:</span>
                 <span id="subtotalText" style="font-family: var(--font-mono); font-weight: 600;">$0.00</span>
+              </div>
+              <div id="discountRow" class="summary-row" style="display: none; color: var(--accent-amber);">
+                <span>Discount:</span>
+                <span id="discountText" style="font-family: var(--font-mono); font-weight: 600;">-$0.00</span>
               </div>
               <div class="summary-row">
                 <span>Sales Tax (8%):</span>
@@ -552,36 +630,89 @@
     <!-- TAB 2: MOBILE CAMERA SCANNER -->
     <div id="tab-camera" class="tab-panel" style="padding: 24px; justify-content: center;">
       <div style="max-width: 600px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 16px;">
-        <div class="arch-card">
+        <div style="background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px;">
           <h2 style="margin-bottom: 8px;">📷 Smartphone Camera Barcode Scanner</h2>
           <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 16px;">
-            Powered by <code>html5-qrcode</code> with 1D retail barcode detection, $1760 Hz audio feedback tone, and 1.5s debounce locking.
+            Uses <code>html5-qrcode</code> with horizontal retail 1D detection box, $1760 Hz audio beep, and debouncing.
           </p>
           <button id="toggleCameraBtn" class="btn-checkout" style="background: var(--accent-blue); color: #000; margin-bottom: 12px;" onclick="toggleCamera()">
             Start Phone Camera Scanner
           </button>
           <div id="reader" style="width: 100%; border-radius: 8px; overflow: hidden; background: #000; display: none;"></div>
           <div id="cameraFeedback" style="text-align: center; color: var(--text-secondary); font-family: var(--font-mono); font-size: 0.85rem; margin-top: 10px;">
-            Camera is offline.
+            Camera is idle.
           </div>
         </div>
       </div>
     </div>
 
-    <!-- TAB 3: INVENTORY CATALOG -->
-    <div id="tab-catalog" class="tab-panel" style="padding: 24px;">
-      <div style="max-width: 1100px; width: 100%; margin: 0 auto;">
-        <h2 style="margin-bottom: 16px;">📦 Live Supermarket Inventory & Stock Levels</h2>
-        <div class="arch-card">
-          <table style="width: 100%;">
+    <!-- TAB 3: MANAGER DASHBOARD -->
+    <div id="tab-dashboard" class="tab-panel" style="padding: 24px; overflow-y: auto;">
+      <div style="max-width: 1200px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h2>📊 Store Performance & Analytics</h2>
+          <button class="btn-action" onclick="renderDashboard()">🔄 Refresh KPIs</button>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary);">Today's Revenue</span>
+            <div id="dashRevenue" style="font-size: 1.8rem; font-weight: 800; font-family: var(--font-mono); color: var(--accent-green);">$0.00</div>
+            <small style="color: var(--text-muted);">Gross sales completed</small>
+          </div>
+          <div class="kpi-card">
+            <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary);">Orders Completed</span>
+            <div id="dashOrders" style="font-size: 1.8rem; font-weight: 800; font-family: var(--font-mono); color: var(--accent-blue);">0</div>
+            <small style="color: var(--text-muted);">Audited transactions</small>
+          </div>
+          <div class="kpi-card">
+            <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary);">Average Basket</span>
+            <div id="dashAvgBasket" style="font-size: 1.8rem; font-weight: 800; font-family: var(--font-mono); color: var(--accent-amber);">$0.00</div>
+            <small style="color: var(--text-muted);">Mean spend per ticket</small>
+          </div>
+          <div class="kpi-card">
+            <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary);">Low Stock Items</span>
+            <div id="dashLowStock" style="font-size: 1.8rem; font-weight: 800; font-family: var(--font-mono); color: var(--accent-red);">0</div>
+            <small style="color: var(--text-muted);">&le; 10 units remaining</small>
+          </div>
+        </div>
+
+        <div style="background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px;">
+          <h3 style="margin-bottom: 14px;">🔥 Top Selling Products</h3>
+          <table>
             <thead>
               <tr>
-                <th>Barcode</th>
+                <th>Product Name</th>
+                <th>Units Sold</th>
+                <th>Revenue Generated</th>
+              </tr>
+            </thead>
+            <tbody id="dashTopProducts">
+              <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No sales data recorded yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: INVENTORY CATALOG -->
+    <div id="tab-catalog" class="tab-panel" style="padding: 24px; overflow-y: auto;">
+      <div style="max-width: 1200px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <h2>📦 Supermarket Product Inventory</h2>
+          <button class="btn-action" style="background: var(--accent-green); color: #000;" onclick="openAddSkuModal()">➕ Add New SKU</button>
+        </div>
+        <div style="background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden;">
+          <table>
+            <thead>
+              <tr>
+                <th>Barcode / PLU</th>
                 <th>Product Name</th>
                 <th>Category</th>
-                <th>Unit Price</th>
-                <th>Available Stock</th>
+                <th>Price</th>
+                <th>Stock</th>
                 <th>Type</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody id="inventoryTableBody"></tbody>
@@ -590,14 +721,14 @@
       </div>
     </div>
 
-    <!-- TAB 4: SALES HISTORY & SYNC LOG -->
-    <div id="tab-history" class="tab-panel" style="padding: 24px;">
-      <div style="max-width: 1100px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 16px;">
+    <!-- TAB 5: SALES HISTORY -->
+    <div id="tab-history" class="tab-panel" style="padding: 24px; overflow-y: auto;">
+      <div style="max-width: 1200px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 16px;">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <h2>📜 Sales Transaction Ledger & Offline Sync</h2>
-          <button class="btn-action" onclick="simulateSync()">🔄 Sync Offline Transactions</button>
+          <h2>📜 Sales Transaction Ledger</h2>
+          <button class="btn-action" onclick="simulateSync()">🔄 Sync Offline Batches</button>
         </div>
-        <div class="arch-card">
+        <div style="background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden;">
           <table>
             <thead>
               <tr>
@@ -605,7 +736,7 @@
                 <th>Timestamp</th>
                 <th>Payment</th>
                 <th>Total</th>
-                <th>Sync Status</th>
+                <th>Status</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -615,70 +746,131 @@
       </div>
     </div>
 
-    <!-- TAB 5: ARCHITECTURE & HARDWARE SPECS -->
-    <div id="tab-architecture" class="tab-panel" style="padding: 24px; overflow-y: auto;">
-      <div class="arch-container">
-        <div class="arch-card">
-          <h2>🏛️ Full-Stack Supermarket POS Architecture</h2>
-          <p style="color: var(--text-secondary); margin-top: 8px;">
-            Supermarket POS environments require sub-second barcode lookups, atomic database transactions (to prevent overselling and corrupt stock), and offline resilience when central network drops.
-          </p>
-
-          <div class="code-box">
-┌────────────────────────────────────────────────────────────────────────┐
-│                      HYBRID SUPERMARKET POS TOPOLOGY                   │
-├────────────────────────────────────────────────────────────────────────┤
-│                                                                        │
-│   [ Lane 01 Terminal ]      [ Lane 02 Terminal ]     [ Mobile Handheld ]
-│   • Local SQLite Buffer     • Local SQLite Buffer    • Camera Scanner  │
-│   • RS-232 Bi-Optic Scale   • RS-232 Bi-Optic Scale  • html5-qrcode    │
-│   • 80mm ESC/POS Printer    • 80mm ESC/POS Printer   • Web Audio Beep  │
-│             │                         │                      │         │
-│             └────────────────┬────────┴──────────────────────┘         │
-│                              ▼                                         │
-│                [ In-Store Edge Server / LAN ]                          │
-│                • Python Flask / FastAPI Daemon                         │
-│                • MySQL Master Database (InnoDB)                        │
-│                • SELECT ... FOR UPDATE (Row-level Locking)             │
-│                              │                                         │
-│                              ▼ (Batched HTTPS Sync)                    │
-│                [ Central Headquarters Cloud ]                          │
-│                • Multi-Store Enterprise ERP Aggregation                │
-└────────────────────────────────────────────────────────────────────────┘
+    <!-- TAB 6: Z-REPORT TILL BALANCING -->
+    <div id="tab-zreport" class="tab-panel" style="padding: 24px; overflow-y: auto;">
+      <div style="max-width: 1000px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+        <h2>🖨️ Daily Z-Report & Cash Drawer Balancing</h2>
+        <div style="background: var(--bg-panel); border: 1.5px solid var(--accent-green); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
+            <strong>LANE 01 - END-OF-DAY TILL RECONCILIATION</strong>
+            <span id="zRepDate">Today</span>
           </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+            <div style="background: var(--bg-card); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+              <small style="color: var(--text-secondary);">Opening Float</small>
+              <div style="font-size: 1.4rem; font-weight: 800; font-family: var(--font-mono);">$100.00</div>
+            </div>
+            <div style="background: var(--bg-card); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+              <small style="color: var(--text-secondary);">Cash Sales</small>
+              <div id="zCash" style="font-size: 1.4rem; font-weight: 800; font-family: var(--font-mono); color: var(--accent-green);">$0.00</div>
+            </div>
+            <div style="background: var(--bg-card); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+              <small style="color: var(--text-secondary);">Expected Cash In Drawer</small>
+              <div id="zExpected" style="font-size: 1.4rem; font-weight: 800; font-family: var(--font-mono); color: var(--accent-blue);">$100.00</div>
+            </div>
+            <div style="background: var(--bg-card); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+              <small style="color: var(--text-secondary);">Card & Mobile Payments</small>
+              <div id="zDigital" style="font-size: 1.4rem; font-weight: 800; font-family: var(--font-mono); color: var(--accent-amber);">$0.00</div>
+            </div>
+          </div>
+          <button class="btn-action" style="align-self: flex-start;" onclick="window.print()">🖨️ Print Z-Report Slip</button>
         </div>
+      </div>
+    </div>
 
-        <div class="arch-card">
-          <h3>⚡ Atomic Checkout Transaction (MySQL InnoDB)</h3>
-          <p style="color: var(--text-secondary); margin-top: 8px;">
-            Using row-level locking (<code>SELECT ... FOR UPDATE</code>) inside an atomic transaction ensures multiple lanes cannot oversell the same inventory concurrently:
-          </p>
-          <div class="code-box">
--- Atomic Transaction Guarantee
-START TRANSACTION;
-
--- 1. Insert Sales Header
-INSERT INTO sales (receipt_number, cashier_name, total, payment_method) 
-VALUES ('REC-20260922-01', 'Lane 01', 15.01, 'CASH');
-
--- 2. Lock and Check Stock Quantity
-SELECT stock_quantity FROM products WHERE id = 1 FOR UPDATE;
-
--- 3. Decrement Inventory
-UPDATE products SET stock_quantity = stock_quantity - 2 WHERE id = 1;
-
--- 4. Insert Line Items
-INSERT INTO sale_items (sale_id, product_id, quantity, unit_price, total_price) 
-VALUES (LAST_INSERT_ID(), 1, 2, 1.50, 3.00);
-
-COMMIT;
-          </div>
+    <!-- TAB 7: ARCHITECTURE & HARDWARE SPECS -->
+    <div id="tab-architecture" class="tab-panel" style="padding: 24px; overflow-y: auto;">
+      <div style="max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px;">
+        <div style="background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px;">
+          <h2>🏛️ Hybrid Supermarket Topology</h2>
+          <pre style="background: var(--bg-input); padding: 16px; border-radius: 8px; font-family: var(--font-mono); color: #38bdf8; margin-top: 12px; overflow-x: auto;">
+[ Lane 01 Terminal ]         [ Lane 02 Terminal ]        [ Mobile PDA Scanner ]
+  • Local SQLite Buffer        • Local SQLite Buffer       • Camera Scanner (html5-qrcode)
+  • RS-232 Scale Protocol      • RS-232 Scale Protocol     • Web Audio Beep (1760Hz)
+         │                            │                            │
+         └───────────────────┬────────┴────────────────────────────┘
+                             ▼ (Local Store LAN)
+               [ In-Store Edge Server / XAMPP Controller ]
+               • Python (Flask) / PHP 8.2 PDO Engine
+               • MySQL 8.0 InnoDB Master Database
+               • SELECT ... FOR UPDATE (Row-level Locking)
+                             │
+                             ▼ (Batched HTTPS Sync)
+               [ Central Cloud / Enterprise ERP ]
+               • Multi-Store Sales Consolidation & Inventory
+          </pre>
         </div>
       </div>
     </div>
   </main>
 
-  <!-- 80mm Thermal Receipt Modal -->
+  <!-- Visual PLU Catalog Modal (F4) -->
+  <div id="catalogModal" class="modal-backdrop">
+    <div class="catalog-modal-content">
+      <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+        <h3>Visual Product Catalog & PLU Lookup</h3>
+        <button onclick="closeCatalogModal()" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+      <div id="catalogGridBody" class="catalog-grid"></div>
+    </div>
+  </div>
+
+  <!-- Recall Modal -->
+  <div id="recallModal" class="modal-backdrop">
+    <div class="form-modal">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
+        <h3>Parked / Held Transactions</h3>
+        <button onclick="closeRecallModal()" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+      <div id="heldListBody" style="display: flex; flex-direction: column; gap: 10px; max-height: 50vh; overflow-y: auto;"></div>
+    </div>
+  </div>
+
+  <!-- Add SKU Modal -->
+  <div id="addSkuModal" class="modal-backdrop">
+    <div class="form-modal">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
+        <h3>Add New Product SKU</h3>
+        <button onclick="closeAddSkuModal()" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+      <form onsubmit="saveNewSku(event)">
+        <div style="margin-bottom: 10px;">
+          <label style="font-size: 0.8rem; color: var(--text-secondary);">Barcode / PLU *</label>
+          <input type="text" id="newBarcode" class="payment-input" required placeholder="e.g. 789012">
+        </div>
+        <div style="margin-bottom: 10px;">
+          <label style="font-size: 0.8rem; color: var(--text-secondary);">Product Name *</label>
+          <input type="text" id="newName" class="payment-input" required placeholder="e.g. Greek Yogurt 500g">
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+          <div>
+            <label style="font-size: 0.8rem; color: var(--text-secondary);">Category</label>
+            <input type="text" id="newCategory" class="payment-input" value="Dairy & Eggs">
+          </div>
+          <div>
+            <label style="font-size: 0.8rem; color: var(--text-secondary);">Price ($) *</label>
+            <input type="number" id="newPrice" class="payment-input" step="0.01" required placeholder="2.99">
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+          <div>
+            <label style="font-size: 0.8rem; color: var(--text-secondary);">Initial Stock</label>
+            <input type="number" id="newStock" class="payment-input" step="0.1" value="50">
+          </div>
+          <div>
+            <label style="font-size: 0.8rem; color: var(--text-secondary);">Sold By Weight?</label>
+            <select id="newWeighed" class="payment-select">
+              <option value="0">No (Unit)</option>
+              <option value="1">Yes (Kilogram)</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn-checkout" style="padding: 12px; font-size: 1rem;">Save SKU</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Thermal Receipt Modal -->
   <div id="receiptModal" class="modal-backdrop">
     <div class="receipt-modal-content">
       <div id="receiptPaper" class="receipt-paper"></div>
@@ -690,9 +882,6 @@ COMMIT;
   </div>
 
   <script>
-    // ==========================================
-    // INITIAL DATA & LOCAL PERSISTENCE
-    // ==========================================
     const DEFAULT_PRODUCTS = [
       { id: 1, barcode: "011110417001", name: "Whole Milk 1L", category: "Dairy & Eggs", price: 1.50, stock: 120.0, is_weighed: false },
       { id: 2, barcode: "041520000102", name: "White Bread Loaf", category: "Bakery", price: 2.20, stock: 45.0, is_weighed: false },
@@ -700,7 +889,7 @@ COMMIT;
       { id: 4, barcode: "078742351864", name: "Basmati Rice 2kg", category: "Grains & Pasta", price: 5.50, stock: 60.0, is_weighed: false },
       { id: 5, barcode: "4065", name: "Green Bell Peppers (kg)", category: "Produce", price: 3.20, stock: 40.25, is_weighed: true, unit: "kg" },
       { id: 6, barcode: "049000028904", name: "Coca-Cola Can 330ml", category: "Beverages", price: 1.25, stock: 200.0, is_weighed: false },
-      { id: 7, barcode: "021130004928", name: "Fresh Chicken Breast (kg)", category: "Meat & Poultry", price: 7.90, stock: 35.8, is_weighed: true, unit: "kg" },
+      { id: 7, barcode: "021130004928", "name": "Fresh Chicken Breast (kg)", category: "Meat & Poultry", price: 7.90, stock: 35.8, is_weighed: true, unit: "kg" },
       { id: 8, barcode: "011110824106", name: "Large Brown Eggs (12-pack)", category: "Dairy & Eggs", price: 3.40, stock: 80.0, is_weighed: false },
       { id: 9, barcode: "028400040112", name: "Classic Potato Chips 150g", category: "Snacks", price: 2.10, stock: 95.0, is_weighed: false },
       { id: 10, barcode: "4131", name: "Fuji Apples (kg)", category: "Produce", price: 2.90, stock: 55.0, is_weighed: true, unit: "kg" }
@@ -708,9 +897,10 @@ COMMIT;
 
     let products = JSON.parse(localStorage.getItem("pos_products") || JSON.stringify(DEFAULT_PRODUCTS));
     let salesHistory = JSON.parse(localStorage.getItem("pos_sales") || "[]");
+    let heldCarts = JSON.parse(localStorage.getItem("pos_held") || "[]");
     let cart = [];
+    let activeDiscount = 0.0;
 
-    // Web Audio Synthesizer Beep (1760 Hz Sine Wave)
     function playBeep(freq = 1760, duration = 0.08) {
       try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -726,30 +916,26 @@ COMMIT;
         gain.connect(ctx.destination);
         osc.start();
         osc.stop(ctx.currentTime + duration);
-      } catch (e) {
-        console.debug("Audio play ignored:", e);
-      }
+      } catch (e) {}
     }
 
-    // Live Clock
     setInterval(() => {
       document.getElementById('clockLabel').innerText = new Date().toLocaleTimeString();
     }, 1000);
 
-    // Tab Navigation
     function switchTab(tabId) {
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-
       event.target.classList.add('active');
       const panel = document.getElementById(`tab-${tabId}`);
       if (panel) panel.classList.add('active');
 
       if (tabId === 'catalog') renderCatalog();
       if (tabId === 'history') renderHistory();
+      if (tabId === 'dashboard') renderDashboard();
+      if (tabId === 'zreport') renderZReport();
     }
 
-    // Scan or Add Barcode
     function scanBarcode(barcode) {
       const prod = products.find(p => p.barcode === barcode.trim());
       if (prod) {
@@ -785,7 +971,7 @@ COMMIT;
     });
 
     function promptScaleItem() {
-      const plu = prompt("Enter Produce PLU Code (e.g. 4011 for Bananas, 4065 for Peppers, 4131 for Apples):", "4011");
+      const plu = prompt("Enter Produce PLU Code (4011 Bananas, 4065 Peppers, 4131 Apples):", "4011");
       if (plu) scanBarcode(plu);
     }
 
@@ -864,13 +1050,22 @@ COMMIT;
         tbody.appendChild(tr);
       });
 
-      const tax = subtotal * 0.08;
-      const total = subtotal + tax;
+      const taxable = Math.max(0, subtotal - activeDiscount);
+      const tax = taxable * 0.08;
+      const total = taxable + tax;
 
       document.getElementById('subtotalText').innerText = `$${subtotal.toFixed(2)}`;
       document.getElementById('taxText').innerText = `$${tax.toFixed(2)}`;
       document.getElementById('totalText').innerText = `$${total.toFixed(2)}`;
       count.innerText = `${totalItems} Items`;
+
+      const dRow = document.getElementById('discountRow');
+      if (activeDiscount > 0) {
+        dRow.style.display = 'flex';
+        document.getElementById('discountText').innerText = `-$${activeDiscount.toFixed(2)}`;
+      } else {
+        dRow.style.display = 'none';
+      }
 
       updateChangeCalculation();
     }
@@ -894,7 +1089,6 @@ COMMIT;
       changeText.innerText = `$${change.toFixed(2)}`;
     }
 
-    // Atomic Checkout Simulator
     function performCheckout() {
       if (cart.length === 0) return alert('Cart is empty.');
       const total = parseFloat(document.getElementById('totalText').innerText.replace('$', '')) || 0;
@@ -906,7 +1100,6 @@ COMMIT;
         return alert(`Insufficient cash. Total is $${total.toFixed(2)}, Tendered is $${tendered.toFixed(2)}`);
       }
 
-      // Decrement stock in catalog (Atomic Simulation)
       for (let item of cart) {
         const prod = products.find(p => p.id === item.id);
         if (prod) {
@@ -926,21 +1119,22 @@ COMMIT;
         timestamp: new Date().toLocaleString(),
         subtotal: total / 1.08,
         tax: total - (total / 1.08),
+        discount: activeDiscount,
         total: total,
         payment_method: method,
         amount_tendered: method === 'CASH' ? tendered : total,
         change_due: method === 'CASH' ? changeDue : 0,
-        items: [...cart],
-        is_synced: true
+        items: [...cart]
       };
 
       salesHistory.unshift(saleRecord);
       localStorage.setItem('pos_sales', JSON.stringify(salesHistory));
 
-      playBeep(2200, 0.15); // Success chime
+      playBeep(2200, 0.15);
       showReceipt(saleRecord);
 
       cart = [];
+      activeDiscount = 0.0;
       document.getElementById('amountTendered').value = '';
       renderCart();
     }
@@ -949,8 +1143,107 @@ COMMIT;
       if (cart.length === 0) return;
       if (confirm('Void entire current transaction?')) {
         cart = [];
+        activeDiscount = 0.0;
         renderCart();
       }
+    }
+
+    function promptDiscount() {
+      const d = prompt('Enter discount amount ($):', '5.00');
+      if (d && !isNaN(parseFloat(d))) {
+        activeDiscount = parseFloat(d);
+        renderCart();
+      }
+    }
+
+    function parkActiveCart() {
+      if (cart.length === 0) return alert('Cart is empty.');
+      const note = prompt('Enter note for parked cart:', 'Customer fetching items');
+      if (note !== null) {
+        const ref = `HOLD-${Math.random().toString(36).substr(2,6).toUpperCase()}`;
+        heldCarts.push({
+          id: Date.now(),
+          reference: ref,
+          note: note,
+          cart: [...cart]
+        });
+        localStorage.setItem('pos_held', JSON.stringify(heldCarts));
+        cart = [];
+        renderCart();
+        updateHeldCountBadge();
+        alert(`Cart parked: ${ref}`);
+      }
+    }
+
+    function openRecallModal() {
+      const list = document.getElementById('heldListBody');
+      list.innerHTML = '';
+      if (heldCarts.length === 0) {
+        list.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px;">No held transactions.</div>';
+      } else {
+        heldCarts.forEach((h, idx) => {
+          const div = document.createElement('div');
+          div.style.cssText = "background: var(--bg-card); padding: 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;";
+          div.innerHTML = `
+            <div>
+              <strong>${h.reference}</strong> - ${h.note}<br>
+              <small style="color: var(--text-muted);">${h.cart.length} items</small>
+            </div>
+            <button class="btn-action" onclick="restoreHeldCart(${idx})">Recall</button>
+          `;
+          list.appendChild(div);
+        });
+      }
+      document.getElementById('recallModal').classList.add('active');
+    }
+
+    function restoreHeldCart(index) {
+      if (cart.length > 0 && !confirm('Active cart will be replaced. Continue?')) return;
+      const h = heldCarts.splice(index, 1)[0];
+      localStorage.setItem('pos_held', JSON.stringify(heldCarts));
+      cart = h.cart;
+      renderCart();
+      closeRecallModal();
+      updateHeldCountBadge();
+    }
+
+    function closeRecallModal() {
+      document.getElementById('recallModal').classList.remove('active');
+    }
+
+    function updateHeldCountBadge() {
+      document.getElementById('heldCountBadge').innerText = heldCarts.length;
+    }
+    updateHeldCountBadge();
+
+    function triggerDrawerKick() {
+      playBeep(880, 0.1);
+      alert('⚡ Cash Drawer kick pulse sent to solenoid.');
+    }
+
+    // Catalog & PLU Modal
+    function openCatalogModal() {
+      const grid = document.getElementById('catalogGridBody');
+      grid.innerHTML = '';
+      products.forEach(p => {
+        const d = document.createElement('div');
+        d.className = 'catalog-item-card';
+        d.onclick = () => {
+          scanBarcode(p.barcode);
+          closeCatalogModal();
+        };
+        d.innerHTML = `
+          <strong>${p.name}</strong>
+          <small style="color: var(--text-muted);">${p.barcode}</small>
+          <div style="color: var(--accent-green); font-weight: bold; margin-top: auto;">$${p.price.toFixed(2)}</div>
+        `;
+        grid.appendChild(d);
+      });
+      document.getElementById('catalogModal').classList.add('active');
+    }
+
+    function closeCatalogModal() {
+      document.getElementById('catalogModal').classList.remove('active');
     }
 
     function showReceipt(sale) {
@@ -982,6 +1275,7 @@ COMMIT;
         </div>
         <div style="margin-bottom: 8px;">
           <div style="display: flex; justify-content: space-between;"><span>Subtotal:</span><span>$${sale.subtotal.toFixed(2)}</span></div>
+          ${sale.discount > 0 ? `<div style="display: flex; justify-content: space-between; color: #b45309;"><span>Discount:</span><span>-$${sale.discount.toFixed(2)}</span></div>` : ''}
           <div style="display: flex; justify-content: space-between;"><span>Tax (8%):</span><span>$${sale.tax.toFixed(2)}</span></div>
           <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; margin-top: 4px;">
             <span>TOTAL:</span><span>$${sale.total.toFixed(2)}</span>
@@ -993,7 +1287,7 @@ COMMIT;
         </div>
         <div style="text-align: center; font-size: 10px; margin-top: 12px; border-top: 1px dashed #000; padding-top: 8px;">
           Thank you for shopping at Metro Fresh!<br>
-          Keep receipt for returns within 14 days.
+          Returns accepted within 14 days with receipt.
         </div>
       `;
 
@@ -1004,27 +1298,110 @@ COMMIT;
       document.getElementById('receiptModal').classList.remove('active');
     }
 
-    // Catalog Table View
+    // Catalog Tab
     function renderCatalog() {
       const tbody = document.getElementById('inventoryTableBody');
       tbody.innerHTML = '';
-      products.forEach(p => {
+      products.forEach((p, idx) => {
+        const isLow = p.stock <= 10;
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td><code>${p.barcode}</code></td>
           <td><strong>${p.name}</strong></td>
           <td>${p.category}</td>
           <td>$${p.price.toFixed(2)}</td>
-          <td style="color: ${p.stock < 10 ? 'var(--accent-red)' : 'var(--accent-green)'}; font-weight: bold;">
-            ${p.stock} ${p.is_weighed ? p.unit : 'units'}
+          <td style="color: ${isLow ? 'var(--accent-red)' : 'var(--accent-green)'}; font-weight: bold;">
+            ${p.stock} ${p.is_weighed ? p.unit : 'units'} ${isLow ? '⚠️ LOW' : ''}
           </td>
           <td>${p.is_weighed ? '⚖️ Weighed' : '🏷️ Unit'}</td>
+          <td>
+            <button class="demo-chip" onclick="adjustLocalStock(${idx})">Stock +/-</button>
+          </td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    // Sales History View
+    function adjustLocalStock(idx) {
+      const delta = prompt(`Add or subtract stock for '${products[idx].name}':`, "10");
+      if (delta && !isNaN(parseFloat(delta))) {
+        products[idx].stock = Math.max(0, products[idx].stock + parseFloat(delta));
+        localStorage.setItem('pos_products', JSON.stringify(products));
+        renderCatalog();
+      }
+    }
+
+    function openAddSkuModal() {
+      document.getElementById('addSkuModal').classList.add('active');
+    }
+    function closeAddSkuModal() {
+      document.getElementById('addSkuModal').classList.remove('active');
+    }
+
+    function saveNewSku(e) {
+      e.preventDefault();
+      const b = document.getElementById('newBarcode').value.trim();
+      const n = document.getElementById('newName').value.trim();
+      const c = document.getElementById('newCategory').value.trim();
+      const p = parseFloat(document.getElementById('newPrice').value);
+      const s = parseFloat(document.getElementById('newStock').value);
+      const w = document.getElementById('newWeighed').value === '1';
+
+      products.push({
+        id: Date.now(),
+        barcode: b,
+        name: n,
+        category: c,
+        price: p,
+        stock: s,
+        is_weighed: w,
+        unit: w ? 'kg' : 'unit'
+      });
+      localStorage.setItem('pos_products', JSON.stringify(products));
+      closeAddSkuModal();
+      renderCatalog();
+      alert(`Product '${n}' saved to catalog!`);
+    }
+
+    // Dashboard Tab
+    function renderDashboard() {
+      let rev = 0;
+      salesHistory.forEach(s => rev += s.total);
+      const orders = salesHistory.length;
+      const avg = orders > 0 ? (rev / orders) : 0;
+      const low = products.filter(p => p.stock <= 10).length;
+
+      document.getElementById('dashRevenue').innerText = `$${rev.toFixed(2)}`;
+      document.getElementById('dashOrders').innerText = orders;
+      document.getElementById('dashAvgBasket').innerText = `$${avg.toFixed(2)}`;
+      document.getElementById('dashLowStock').innerText = low;
+
+      const topTbody = document.getElementById('dashTopProducts');
+      topTbody.innerHTML = '';
+      if (salesHistory.length === 0) {
+        topTbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No sales recorded yet.</td></tr>';
+      } else {
+        const itemMap = {};
+        salesHistory.forEach(s => {
+          s.items.forEach(i => {
+            if (!itemMap[i.name]) itemMap[i.name] = { count: 0, revenue: 0 };
+            itemMap[i.name].count += i.quantity;
+            itemMap[i.name].revenue += (i.price * i.quantity);
+          });
+        });
+        Object.entries(itemMap).slice(0, 5).forEach(([name, data]) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${name}</strong></td>
+            <td><span class="badge badge-blue">${data.count}</span></td>
+            <td style="font-family: var(--font-mono); font-weight: bold; color: var(--accent-green);">$${data.revenue.toFixed(2)}</td>
+          `;
+          topTbody.appendChild(tr);
+        });
+      }
+    }
+
+    // History Tab
     function renderHistory() {
       const tbody = document.getElementById('salesHistoryBody');
       tbody.innerHTML = '';
@@ -1046,26 +1423,38 @@ COMMIT;
       });
     }
 
+    // Z-Report Tab
+    function renderZReport() {
+      let cashSales = 0;
+      let digitalSales = 0;
+      salesHistory.forEach(s => {
+        if (s.payment_method === 'CASH') cashSales += s.total;
+        else digitalSales += s.total;
+      });
+      const floatVal = 100.00;
+      document.getElementById('zRepDate').innerText = new Date().toLocaleDateString();
+      document.getElementById('zCash').innerText = `$${cashSales.toFixed(2)}`;
+      document.getElementById('zExpected').innerText = `$${(floatVal + cashSales).toFixed(2)}`;
+      document.getElementById('zDigital').innerText = `$${digitalSales.toFixed(2)}`;
+    }
+
     function simulateSync() {
       alert('✓ All offline sales batches successfully verified and synchronized with central server.');
     }
 
-    // Keyboard Shortcuts
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'F12') {
-        e.preventDefault();
-        performCheckout();
-      }
+      if (e.key === 'F12') { e.preventDefault(); performCheckout(); }
+      if (e.key === 'F4') { e.preventDefault(); openCatalogModal(); }
+      if (e.key === 'F8') { e.preventDefault(); promptScaleItem(); }
       if (e.key === 'Escape') {
-        if (document.getElementById('receiptModal').classList.contains('active')) {
-          closeReceiptModal();
-        } else {
-          voidCurrentTransaction();
-        }
+        if (document.getElementById('receiptModal').classList.contains('active')) closeReceiptModal();
+        else if (document.getElementById('catalogModal').classList.contains('active')) closeCatalogModal();
+        else if (document.getElementById('recallModal').classList.contains('active')) closeRecallModal();
+        else voidCurrentTransaction();
       }
     });
 
-    // Camera Barcode Scanner
+    // Mobile Camera Scanner
     let html5QrCode = null;
     let isCameraRunning = false;
     let isScanningLocked = false;
@@ -1075,9 +1464,7 @@ COMMIT;
       const btn = document.getElementById('toggleCameraBtn');
       const fb = document.getElementById('cameraFeedback');
 
-      if (!html5QrCode) {
-        html5QrCode = new Html5Qrcode("reader");
-      }
+      if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
 
       if (isCameraRunning) {
         html5QrCode.stop().then(() => {
@@ -1089,7 +1476,6 @@ COMMIT;
       } else {
         reader.style.display = 'block';
         fb.innerText = 'Starting camera feed...';
-
         html5QrCode.start(
           { facingMode: "environment" },
           { fps: 12, qrbox: { width: 280, height: 160 } },

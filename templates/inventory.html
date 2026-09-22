@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory Management - Metro Supermarket</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    body { height: auto; min-height: 100vh; overflow-y: auto; }
+    .inv-container { max-width: 1200px; margin: 0 auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 20px; }
+    
+    .inv-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: var(--bg-panel);
+      padding: 16px 20px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+    }
+
+    .filter-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex: 1;
+      max-width: 600px;
+    }
+
+    .filter-input {
+      flex: 1;
+      padding: 10px 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-primary);
+      outline: none;
+    }
+    .filter-input:focus { border-color: var(--accent-blue); }
+
+    /* Modal Form Styling */
+    .form-modal {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      width: 480px;
+      max-width: 90vw;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      color: var(--text-primary);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Application Bar -->
+  <header class="top-bar">
+    <div class="brand-section">
+      <span class="brand-icon">🛒</span>
+      <div class="brand-title">METRO<span>INVENTORY</span> <small style="color: var(--text-muted); font-size: 0.75rem;">Catalog & Stock</small></div>
+    </div>
+
+    <div class="system-status">
+      <span class="badge badge-online">● MySQL Active</span>
+      <span class="badge badge-db">DB: {{ db_type }}</span>
+    </div>
+
+    <nav class="nav-links">
+      <a href="/" class="nav-btn">Register Lane</a>
+      <a href="/mobile" class="nav-btn">📷 Scanner</a>
+      <a href="/dashboard" class="nav-btn">📊 Dashboard</a>
+      <a href="/inventory" class="nav-btn active">📦 Inventory</a>
+      <a href="/reports" class="nav-btn">📜 Reports</a>
+    </nav>
+  </header>
+
+  <main class="inv-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+      <div>
+        <h1 style="font-size: 1.7rem; font-weight: 800;">Supermarket Inventory Catalog</h1>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">Manage retail barcodes, weighed produce (PLU), cost prices, and minimum stock alerts.</p>
+      </div>
+      <button class="btn-pay" style="padding: 10px 20px; font-size: 0.95rem;" onclick="openAddModal()">
+        ➕ Add New Product SKU
+      </button>
+    </div>
+
+    <!-- Search & Filter Controls -->
+    <div class="inv-controls">
+      <div class="filter-group">
+        <input type="text" id="searchInput" class="filter-input" placeholder="Search by Barcode or Product Name..." oninput="filterProducts()">
+        <select id="categorySelect" class="filter-input" style="max-width: 200px;" onchange="filterProducts()">
+          <option value="">All Categories</option>
+          <option value="Dairy & Eggs">Dairy & Eggs</option>
+          <option value="Bakery">Bakery</option>
+          <option value="Produce">Produce</option>
+          <option value="Grains & Pasta">Grains & Pasta</option>
+          <option value="Beverages">Beverages</option>
+          <option value="Meat & Poultry">Meat & Poultry</option>
+          <option value="Snacks">Snacks</option>
+        </select>
+      </div>
+      <span id="productCountBadge" style="color: var(--text-muted); font-size: 0.85rem;">Loading catalog...</span>
+    </div>
+
+    <!-- Products Table -->
+    <div style="background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden;">
+      <table class="cart-table">
+        <thead>
+          <tr>
+            <th>Barcode / PLU</th>
+            <th>Product Name</th>
+            <th>Category</th>
+            <th>Retail Price</th>
+            <th>Cost Price</th>
+            <th>Stock Level</th>
+            <th>Type</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="inventoryTableBody">
+          <tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text-muted);">Loading supermarket inventory...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- Add Product Modal -->
+  <div id="productModal" class="modal-backdrop">
+    <div class="form-modal">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
+        <h3 id="modalTitle">Add New Supermarket SKU</h3>
+        <button onclick="closeProductModal()" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+
+      <form id="productForm" onsubmit="saveProduct(event)">
+        <input type="hidden" id="prodId">
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label class="form-label">Barcode / PLU Code *</label>
+          <input type="text" id="prodBarcode" class="payment-input" required placeholder="e.g. 011110417001 or 4011">
+        </div>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label class="form-label">Product Name *</label>
+          <input type="text" id="prodName" class="payment-input" required placeholder="e.g. Whole Milk 1L">
+        </div>
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label class="form-label">Category</label>
+          <select id="prodCategory" class="payment-select">
+            <option value="Dairy & Eggs">Dairy & Eggs</option>
+            <option value="Bakery">Bakery</option>
+            <option value="Produce">Produce</option>
+            <option value="Grains & Pasta">Grains & Pasta</option>
+            <option value="Beverages">Beverages</option>
+            <option value="Meat & Poultry">Meat & Poultry</option>
+            <option value="Snacks">Snacks</option>
+            <option value="General">General</option>
+          </select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+          <div class="form-group">
+            <label class="form-label">Retail Price ($) *</label>
+            <input type="number" id="prodPrice" class="payment-input" step="0.01" required placeholder="1.50">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cost Price ($)</label>
+            <input type="number" id="prodCost" class="payment-input" step="0.01" placeholder="1.10">
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+          <div class="form-group">
+            <label class="form-label">Initial Stock Qty</label>
+            <input type="number" id="prodStock" class="payment-input" step="0.001" value="50.0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sold by Weight?</label>
+            <select id="prodWeighed" class="payment-select">
+              <option value="0">No (Unit / Each)</option>
+              <option value="1">Yes (Kilogram / kg)</option>
+            </select>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 10px;">
+          <button type="submit" class="btn-pay" style="flex: 1; padding: 12px; font-size: 1rem;">Save SKU</button>
+          <button type="button" class="btn-void" style="padding: 12px 20px;" onclick="closeProductModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let allProducts = [];
+
+    async function loadProducts() {
+      try {
+        const res = await fetch('/api/products');
+        const data = await res.json();
+        if (data.success) {
+          allProducts = data.products;
+          renderProductTable(allProducts);
+        }
+      } catch (e) {
+        console.error("Fetch products failed:", e);
+      }
+    }
+
+    function renderProductTable(prods) {
+      const tbody = document.getElementById('inventoryTableBody');
+      const countEl = document.getElementById('productCountBadge');
+      countEl.innerText = `Showing ${prods.length} Supermarket SKUs`;
+
+      tbody.innerHTML = '';
+      if (prods.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">No matching products found.</td></tr>';
+        return;
+      }
+
+      prods.forEach(p => {
+        const isLow = p.stock_quantity <= 10;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><code>${p.barcode}</code></td>
+          <td><strong>${p.name}</strong></td>
+          <td><span class="badge" style="background: rgba(255,255,255,0.06);">${p.category || 'General'}</span></td>
+          <td style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-green);">$${p.price.toFixed(2)}</td>
+          <td style="font-family: var(--font-mono); color: var(--text-muted);">$${p.cost_price ? p.cost_price.toFixed(2) : '0.00'}</td>
+          <td style="font-family: var(--font-mono); font-weight: 700; color: ${isLow ? 'var(--accent-red)' : 'var(--text-primary)'};">
+            ${p.stock_quantity} ${p.is_weighed ? 'kg' : 'units'} ${isLow ? '⚠️ LOW' : ''}
+          </td>
+          <td>${p.is_weighed ? '⚖️ Weighed' : '🏷️ Unit'}</td>
+          <td>
+            <button class="demo-chip" onclick="openEditModal(${p.id})">Edit</button>
+            <button class="demo-chip" onclick="adjustStockPrompt(${p.id}, '${p.name}')">Stock +/-</button>
+            <button class="demo-chip" style="color: var(--accent-red); border-color: rgba(239,68,68,0.3);" onclick="deleteProduct(${p.id}, '${p.name}')">&times;</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterProducts() {
+      const q = document.getElementById('searchInput').value.toLowerCase().trim();
+      const cat = document.getElementById('categorySelect').value;
+
+      const filtered = allProducts.filter(p => {
+        const matchQ = !q || p.name.toLowerCase().includes(q) || p.barcode.toLowerCase().includes(q);
+        const matchCat = !cat || p.category === cat;
+        return matchQ && matchCat;
+      });
+      renderProductTable(filtered);
+    }
+
+    function openAddModal() {
+      document.getElementById('modalTitle').innerText = 'Add New Supermarket SKU';
+      document.getElementById('productForm').reset();
+      document.getElementById('prodId').value = '';
+      document.getElementById('productModal').classList.add('active');
+    }
+
+    function openEditModal(id) {
+      const prod = allProducts.find(p => p.id === id);
+      if (!prod) return;
+      document.getElementById('modalTitle').innerText = `Edit: ${prod.name}`;
+      document.getElementById('prodId').value = prod.id;
+      document.getElementById('prodBarcode').value = prod.barcode;
+      document.getElementById('prodName').value = prod.name;
+      document.getElementById('prodCategory').value = prod.category || 'General';
+      document.getElementById('prodPrice').value = prod.price;
+      document.getElementById('prodCost').value = prod.cost_price || 0;
+      document.getElementById('prodStock').value = prod.stock_quantity;
+      document.getElementById('prodWeighed').value = prod.is_weighed ? '1' : '0';
+      document.getElementById('productModal').classList.add('active');
+    }
+
+    function closeProductModal() {
+      document.getElementById('productModal').classList.remove('active');
+    }
+
+    async function saveProduct(e) {
+      e.preventDefault();
+      const id = document.getElementById('prodId').value;
+      const payload = {
+        barcode: document.getElementById('prodBarcode').value.trim(),
+        name: document.getElementById('prodName').value.trim(),
+        category: document.getElementById('prodCategory').value,
+        price: parseFloat(document.getElementById('prodPrice').value),
+        cost_price: parseFloat(document.getElementById('prodCost').value) || 0,
+        stock_quantity: parseFloat(document.getElementById('prodStock').value) || 0,
+        is_weighed: document.getElementById('prodWeighed').value === '1'
+      };
+
+      try {
+        const url = id ? `/api/products/${id}` : '/api/products';
+        const method = id ? 'PUT' : 'POST';
+        const res = await fetch(url, {
+          method: method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        if (result.success) {
+          closeProductModal();
+          loadProducts();
+        } else {
+          alert('Error: ' + result.message);
+        }
+      } catch (err) {
+        alert('Network error saving product');
+      }
+    }
+
+    async function adjustStockPrompt(id, name) {
+      const addQty = prompt(`Adjust stock for '${name}' (Enter positive number to add, negative to subtract):`, "10");
+      if (addQty !== null) {
+        const delta = parseFloat(addQty);
+        if (!isNaN(delta)) {
+          const prod = allProducts.find(p => p.id === id);
+          if (prod) {
+            const newStock = Math.max(0, prod.stock_quantity + delta);
+            await fetch(`/api/products/${id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ stock_quantity: newStock })
+            });
+            loadProducts();
+          }
+        }
+      }
+    }
+
+    async function deleteProduct(id, name) {
+      if (confirm(`Are you sure you want to delete '${name}' from inventory?`)) {
+        await fetch(`/api/products/${id}`, { method: 'DELETE' });
+        loadProducts();
+      }
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>

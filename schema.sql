@@ -15,7 +15,6 @@ CREATE TABLE IF NOT EXISTS categories (
 ) ENGINE=InnoDB;
 
 -- 2. Products / Inventory Table
--- Supports both packaged unit goods (by barcode) and weighed loose produce (by kg/PLU)
 CREATE TABLE IF NOT EXISTS products (
     id INT AUTO_INCREMENT PRIMARY KEY,
     barcode VARCHAR(64) UNIQUE NOT NULL,
@@ -35,7 +34,7 @@ CREATE TABLE IF NOT EXISTS products (
     INDEX idx_category (category)
 ) ENGINE=InnoDB;
 
--- 3. Cashier & Terminal Sessions
+-- 3. Cashier & Terminal Accounts
 CREATE TABLE IF NOT EXISTS cashiers (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -58,7 +57,7 @@ CREATE TABLE IF NOT EXISTS sales (
     payment_method ENUM('CASH', 'CARD', 'MOBILE_MONEY', 'SPLIT') NOT NULL,
     amount_tendered DECIMAL(10, 2) NOT NULL,
     change_due DECIMAL(10, 2) NOT NULL,
-    is_synced BOOLEAN DEFAULT TRUE, -- Flag for offline lane syncing
+    is_synced BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_receipt (receipt_number),
     INDEX idx_created (created_at)
@@ -81,7 +80,34 @@ CREATE TABLE IF NOT EXISTS sale_items (
     INDEX idx_product_id (product_id)
 ) ENGINE=InnoDB;
 
--- 6. Offline Sync Batch Audit Log
+-- 6. Held / Suspended Carts (Layaway / Parked Transactions)
+CREATE TABLE IF NOT EXISTS held_carts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    hold_reference VARCHAR(64) UNIQUE NOT NULL,
+    customer_note VARCHAR(150),
+    cart_json LONGTEXT NOT NULL,
+    item_count INT NOT NULL,
+    subtotal DECIMAL(10, 2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- 7. Cashier Till Sessions & Daily Z-Reports
+CREATE TABLE IF NOT EXISTS till_sessions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    terminal_id VARCHAR(32) NOT NULL DEFAULT 'LANE-01',
+    cashier_name VARCHAR(100) NOT NULL,
+    opening_float DECIMAL(10, 2) NOT NULL DEFAULT 100.00,
+    closing_cash DECIMAL(10, 2) DEFAULT NULL,
+    expected_cash DECIMAL(10, 2) DEFAULT NULL,
+    discrepancy DECIMAL(10, 2) DEFAULT NULL,
+    total_sales DECIMAL(10, 2) DEFAULT 0.00,
+    total_transactions INT DEFAULT 0,
+    status ENUM('OPEN', 'CLOSED') DEFAULT 'OPEN',
+    opened_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    closed_at TIMESTAMP NULL
+) ENGINE=InnoDB;
+
+-- 8. Offline Sync Batch Audit Log
 CREATE TABLE IF NOT EXISTS offline_sync_batches (
     id INT AUTO_INCREMENT PRIMARY KEY,
     batch_id VARCHAR(64) UNIQUE NOT NULL,
@@ -92,18 +118,18 @@ CREATE TABLE IF NOT EXISTS offline_sync_batches (
 
 -- ==========================================================
 -- Baseline Supermarket Seed Data
--- Packaged Goods (1D Barcodes) & Weighed Produce (PLU Codes)
 -- ==========================================================
 
-INSERT INTO categories (name, description) VALUES
+INSERT IGNORE INTO categories (name, description) VALUES
 ('Dairy & Eggs', 'Milk, butter, cheeses, and eggs'),
 ('Bakery', 'Freshly baked bread, rolls, and pastries'),
 ('Produce', 'Fresh fruits and weighed vegetables'),
 ('Grains & Pasta', 'Rice, pasta, flour, and cereals'),
 ('Beverages', 'Juices, soda, and mineral water'),
-('Meat & Poultry', 'Fresh and butchered meats');
+('Meat & Poultry', 'Fresh and butchered meats'),
+('Snacks', 'Chips, crackers, and confectionary');
 
-INSERT INTO products (barcode, name, category, price, cost_price, stock_quantity, is_weighed, unit_of_measure) VALUES
+INSERT IGNORE INTO products (barcode, name, category, price, cost_price, stock_quantity, is_weighed, unit_of_measure) VALUES
 ('011110417001', 'Whole Milk 1L', 'Dairy & Eggs', 1.50, 1.10, 120.000, FALSE, 'unit'),
 ('041520000102', 'White Bread Loaf', 'Bakery', 2.20, 1.40, 45.000, FALSE, 'unit'),
 ('4011', 'Fresh Bananas (kg)', 'Produce', 1.80, 0.90, 85.500, TRUE, 'kg'),
@@ -113,4 +139,13 @@ INSERT INTO products (barcode, name, category, price, cost_price, stock_quantity
 ('021130004928', 'Fresh Chicken Breast (kg)', 'Meat & Poultry', 7.90, 5.20, 35.800, TRUE, 'kg'),
 ('011110824106', 'Large Brown Eggs (12-pack)', 'Dairy & Eggs', 3.40, 2.30, 80.000, FALSE, 'unit'),
 ('028400040112', 'Classic Potato Chips 150g', 'Snacks', 2.10, 1.30, 95.000, FALSE, 'unit'),
-('4131', 'Fuji Apples (kg)', 'Produce', 2.90, 1.60, 55.000, TRUE, 'kg');
+('4131', 'Fuji Apples (kg)', 'Produce', 2.90, 1.60, 55.000, TRUE, 'kg'),
+('038000358210', 'Kelloggs Corn Flakes 500g', 'Grains & Pasta', 4.30, 2.90, 50.000, FALSE, 'unit'),
+('012000000133', 'Pepsi Cola 2L', 'Beverages', 2.50, 1.50, 75.000, FALSE, 'unit'),
+('4087', 'Roma Tomatoes (kg)', 'Produce', 2.40, 1.20, 62.000, TRUE, 'kg'),
+('051500022407', 'Jif Peanut Butter 450g', 'Grains & Pasta', 3.80, 2.40, 40.000, FALSE, 'unit'),
+('070470003004', 'Yoplait Strawberry Yogurt 4pk', 'Dairy & Eggs', 2.80, 1.70, 65.000, FALSE, 'unit');
+
+INSERT IGNORE INTO cashiers (username, full_name, pin_hash, role) VALUES
+('lane01', 'Jane Doe (Lane 01)', '1234', 'CASHIER'),
+('manager', 'Robert Vance (Store Mgr)', '9999', 'MANAGER');

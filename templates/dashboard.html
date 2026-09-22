@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Store Manager Dashboard - Metro Supermarket</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    body { height: auto; min-height: 100vh; overflow-y: auto; }
+    .dashboard-container { max-width: 1200px; margin: 0 auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 24px; }
+    
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .kpi-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .kpi-title { font-size: 0.85rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; }
+    .kpi-value { font-size: 2rem; font-weight: 800; font-family: var(--font-mono); color: var(--accent-green); }
+    .kpi-sub { font-size: 0.8rem; color: var(--text-muted); }
+
+    .dash-sections {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 900px) {
+      .dash-sections { grid-template-columns: 1fr; }
+    }
+
+    .section-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+    }
+    .section-header-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Application Bar -->
+  <header class="top-bar">
+    <div class="brand-section">
+      <span class="brand-icon">🛒</span>
+      <div class="brand-title">METRO<span>MANAGER</span> <small style="color: var(--text-muted); font-size: 0.75rem;">Backoffice</small></div>
+    </div>
+
+    <div class="system-status">
+      <span class="badge badge-online">● Server Connected</span>
+      <span class="badge badge-db">DB: {{ db_type }}</span>
+    </div>
+
+    <nav class="nav-links">
+      <a href="/" class="nav-btn">Register Lane</a>
+      <a href="/mobile" class="nav-btn">📷 Scanner</a>
+      <a href="/dashboard" class="nav-btn active">📊 Dashboard</a>
+      <a href="/inventory" class="nav-btn">📦 Inventory</a>
+      <a href="/reports" class="nav-btn">📜 Reports</a>
+    </nav>
+  </header>
+
+  <main class="dashboard-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+      <div>
+        <h1 style="font-size: 1.7rem; font-weight: 800;">Store Performance & Live Metrics</h1>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">Real-time checkout throughput, inventory valuation, and sales velocity.</p>
+      </div>
+      <button class="nav-btn" onclick="loadDashboardData()" style="padding: 8px 16px; font-weight: 700;">🔄 Refresh Data</button>
+    </div>
+
+    <!-- 4 Key Performance Indicators -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-title">Today's Gross Sales</div>
+        <div id="kpiRevenue" class="kpi-value">$0.00</div>
+        <div class="kpi-sub">Total revenue across all lanes</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Transactions Completed</div>
+        <div id="kpiOrders" class="kpi-value" style="color: var(--accent-blue);">0</div>
+        <div class="kpi-sub">Customers checked out today</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Average Basket Size</div>
+        <div id="kpiAvgBasket" class="kpi-value" style="color: var(--accent-amber);">$0.00</div>
+        <div class="kpi-sub">Average spend per receipt</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-title">Low Stock SKUs</div>
+        <div id="kpiLowStock" class="kpi-value" style="color: var(--accent-red);">0</div>
+        <div class="kpi-sub">Items requiring shelf restocking</div>
+      </div>
+    </div>
+
+    <!-- Grid Content -->
+    <div class="dash-sections">
+      <!-- Left: Top Selling Items -->
+      <div class="section-card">
+        <div class="section-header-title">
+          <span>🔥 Top-Selling Products Today</span>
+          <a href="/inventory" class="demo-chip" style="text-decoration: none;">View All SKUs ➔</a>
+        </div>
+        <table class="cart-table">
+          <thead>
+            <tr>
+              <th>Product Name</th>
+              <th>Units Sold</th>
+              <th>Gross Revenue</th>
+            </tr>
+          </thead>
+          <tbody id="topProductsBody">
+            <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Loading sales metrics...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Right: Inventory Status & Quick Links -->
+      <div class="section-card">
+        <div class="section-header-title">
+          <span>📦 Inventory Health</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="background: var(--bg-card); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+            <div style="color: var(--text-secondary); font-size: 0.85rem;">Total Inventory Value (Cost)</div>
+            <div id="invAssetValue" style="font-size: 1.5rem; font-weight: 800; font-family: var(--font-mono); color: var(--text-primary); margin-top: 4px;">$0.00</div>
+          </div>
+          <div style="background: var(--bg-card); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border);">
+            <div style="color: var(--text-secondary); font-size: 0.85rem;">Active Supermarket SKUs</div>
+            <div id="invTotalSkus" style="font-size: 1.5rem; font-weight: 800; font-family: var(--font-mono); color: var(--accent-blue); margin-top: 4px;">0</div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <a href="/inventory" class="btn-action" style="text-align: center; text-decoration: none;">➕ Add New Product SKU</a>
+            <a href="/reports" class="btn-action" style="text-align: center; text-decoration: none;">🖨️ Generate Z-Report Till Close</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    async function loadDashboardData() {
+      try {
+        const res = await fetch('/api/stats');
+        const data = await res.json();
+
+        if (data.success) {
+          document.getElementById('kpiRevenue').innerText = `$${data.today.gross_revenue.toFixed(2)}`;
+          document.getElementById('kpiOrders').innerText = data.today.total_orders;
+          document.getElementById('kpiAvgBasket').innerText = `$${data.today.avg_basket.toFixed(2)}`;
+          document.getElementById('kpiLowStock').innerText = data.inventory.low_stock_count;
+
+          document.getElementById('invAssetValue').innerText = `$${data.inventory.asset_value.toFixed(2)}`;
+          document.getElementById('invTotalSkus').innerText = data.inventory.total_skus;
+
+          const topTbody = document.getElementById('topProductsBody');
+          topTbody.innerHTML = '';
+          if (!data.top_products || data.top_products.length === 0) {
+            topTbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No sales recorded today yet.</td></tr>';
+          } else {
+            data.top_products.forEach(p => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td><strong>${p.product_name}</strong></td>
+                <td><span class="badge badge-blue">${p.units_sold}</span></td>
+                <td style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-green);">$${parseFloat(p.revenue).toFixed(2)}</td>
+              `;
+              topTbody.appendChild(tr);
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Dashboard error:", err);
+      }
+    }
+
+    loadDashboardData();
+  </script>
+</body>
+</html>

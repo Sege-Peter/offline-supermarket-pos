@@ -1,0 +1,15 @@
+RewriteEngine On
+RewriteBase /offline-supermarket-pos/
+
+# Route API endpoints to api.php for native Apache/PHP execution
+RewriteRule ^api/product/(.+)$ api.php?action=product&barcode=$1 [QSA,L]
+RewriteRule ^api/products/?$ api.php?action=products [QSA,L]
+RewriteRule ^api/products/([0-9]+)$ api.php?action=products&id=$1 [QSA,L]
+RewriteRule ^api/checkout/?$ api.php?action=checkout [QSA,L]
+RewriteRule ^api/hold/?$ api.php?action=hold [QSA,L]
+RewriteRule ^api/held-carts/?$ api.php?action=held_carts [QSA,L]
+RewriteRule ^api/recall/([0-9]+)$ api.php?action=recall&id=$1 [QSA,L]
+RewriteRule ^api/receipt/(.+)$ api.php?action=receipt&receipt_number=$1 [QSA,L]
+RewriteRule ^api/stats/?$ api.php?action=stats [QSA,L]
+RewriteRule ^api/reports/sales/?$ api.php?action=sales_report [QSA,L]
+RewriteRule ^api/reports/z-report/?$ api.php?action=z_report [QSA,L]
