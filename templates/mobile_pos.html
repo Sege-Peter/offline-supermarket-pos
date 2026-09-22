@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mobile POS & Camera Scanner - Lane 01</title>
+  <!-- HTML5 QR & 1D Barcode Scanner Library -->
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    body {
+      height: auto;
+      min-height: 100vh;
+      overflow-y: auto;
+      padding-bottom: 30px;
+    }
+
+    .mobile-container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .camera-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #reader {
+      width: 100%;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: #000;
+      display: none;
+    }
+
+    .btn-camera-toggle {
+      padding: 14px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      background: var(--accent-blue);
+      color: #000;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .camera-feedback {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      text-align: center;
+      min-height: 1.2rem;
+      font-family: var(--font-mono);
+    }
+
+    .mobile-cart-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+    }
+
+    .cart-item-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cart-item-row:last-child {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Mobile Bar -->
+  <header class="top-bar">
+    <div class="brand-section">
+      <span class="brand-icon">🛒</span>
+      <div class="brand-title">METRO<span>MOBILE</span></div>
+    </div>
+    <div class="nav-links">
+      <a href="/" class="nav-btn">Desktop</a>
+      <a href="/mobile" class="nav-btn active">📷 Scanner</a>
+    </div>
+  </header>
+
+  <div class="mobile-container">
+    <!-- Camera Scanner Card -->
+    <div class="camera-card">
+      <button class="btn-camera-toggle" id="toggleCameraBtn" onclick="togglePhoneCamera()">
+        📷 Open Phone Barcode Scanner
+      </button>
+
+      <div id="reader"></div>
+      <div class="camera-feedback" id="scanFeedback">Camera is currently idle.</div>
+
+      <!-- Manual Barcode Fallback -->
+      <div class="scan-toolbar" style="padding: 0; background: transparent; border: none;">
+        <div class="barcode-input-wrap">
+          <span class="barcode-icon">🔍</span>
+          <input 
+            type="text" 
+            id="barcodeInput" 
+            class="barcode-input" 
+            placeholder="Type barcode & Enter..." 
+            style="font-size: 1rem; padding: 10px 12px 10px 38px;"
+          >
+        </div>
+        <button class="tool-btn" onclick="triggerMobileLookup()" style="padding: 10px 14px;">Add</button>
+      </div>
+
+      <!-- Quick Scan Pills -->
+      <div style="display: flex; gap: 6px; overflow-x: auto; padding-top: 4px;">
+        <button class="demo-chip" onclick="lookupBarcode('011110417001')">🥛 Milk</button>
+        <button class="demo-chip" onclick="lookupBarcode('041520000102')">🍞 Bread</button>
+        <button class="demo-chip" onclick="lookupBarcode('4011')">🍌 Bananas</button>
+        <button class="demo-chip" onclick="lookupBarcode('049000028904')">🥤 Coke</button>
+      </div>
+    </div>
+
+    <!-- Mobile Cart Display -->
+    <div class="mobile-cart-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="font-size: 1.15rem;">Shopping Cart</h3>
+        <span id="itemCountLabel" style="font-size: 0.85rem; color: var(--text-muted);">0 Items</span>
+      </div>
+
+      <div id="cartEmpty" class="cart-empty" style="padding: 30px 0;">
+        <div class="empty-icon" style="font-size: 2.2rem;">🛒</div>
+        <p style="font-size: 0.9rem;">No items scanned yet.</p>
+      </div>
+
+      <div id="cartMobileList"></div>
+
+      <!-- Summary -->
+      <div class="summary-card" style="margin-top: 14px; margin-bottom: 14px;">
+        <div class="summary-row">
+          <span>Subtotal:</span>
+          <span id="subtotalLabel" style="font-family: var(--font-mono); font-weight: 600;">$0.00</span>
+        </div>
+        <div class="summary-row">
+          <span>Tax (8%):</span>
+          <span id="taxLabel" style="font-family: var(--font-mono); font-weight: 600;">$0.00</span>
+        </div>
+        <div class="summary-row grand-total" style="font-size: 1.6rem;">
+          <span>TOTAL:</span>
+          <span id="totalLabel">$0.00</span>
+        </div>
+      </div>
+
+      <!-- Payment & Checkout -->
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label class="form-label" for="payMethod">Payment Method</label>
+        <select id="payMethod" class="payment-select" onchange="calculateChange()">
+          <option value="CASH">💵 Cash</option>
+          <option value="CARD">💳 Card / Contactless</option>
+          <option value="MOBILE_MONEY">📱 Mobile Money</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 14px;">
+        <label class="form-label" for="tenderedInput">Amount Tendered ($)</label>
+        <input 
+          type="number" 
+          id="tenderedInput" 
+          class="payment-input" 
+          step="0.01" 
+          placeholder="0.00" 
+          oninput="calculateChange()"
+        >
+      </div>
+
+      <div class="change-due-box" style="margin-bottom: 14px;">
+        <span>Change Due:</span>
+        <span id="changeDueLabel" style="font-size: 1.15rem; font-family: var(--font-mono);">$0.00</span>
+      </div>
+
+      <button id="payButton" class="btn-pay" onclick="handleCheckout()" style="width: 100%;">
+        COMPLETE CHECKOUT
+      </button>
+    </div>
+  </div>
+
+  <!-- Thermal Receipt Modal -->
+  <div id="receiptModal" class="modal-backdrop">
+    <div class="receipt-modal-content">
+      <div id="receiptPaper" class="receipt-paper"></div>
+      <div class="receipt-actions">
+        <button class="btn-print" onclick="printThermalReceipt()">🖨️ Print</button>
+        <button class="btn-close" onclick="closeReceiptModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/pos-engine.js"></script>
+  <script>
+    let html5QrCode = null;
+    let isCameraRunning = false;
+    let isScanningLocked = false;
+
+    // Overwrite renderCart for mobile list representation
+    const originalRenderCart = renderCart;
+    renderCart = function() {
+      originalRenderCart();
+
+      const mobileList = document.getElementById('cartMobileList');
+      if (!mobileList) return;
+
+      mobileList.innerHTML = '';
+      if (cart.length === 0) return;
+
+      cart.forEach(item => {
+        const lineTotal = (item.price * item.quantity).toFixed(2);
+        const div = document.createElement('div');
+        div.className = 'cart-item-row';
+        div.innerHTML = `
+          <div>
+            <div class="item-name">${escapeHtml(item.name)}</div>
+            <div class="item-meta">$${item.price.toFixed(2)} x ${item.quantity} ${item.is_weighed ? item.unit_of_measure : ''}</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="qty-control">
+              <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)">−</button>
+              <span class="qty-display">${item.quantity}</span>
+              <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
+            </div>
+            <span style="font-weight: 700; font-family: var(--font-mono); min-width: 55px; text-align: right;">$${lineTotal}</span>
+            <button class="btn-remove" onclick="removeFromCart(${item.id})">&times;</button>
+          </div>
+        `;
+        mobileList.appendChild(div);
+      });
+    };
+
+    function togglePhoneCamera() {
+      const readerElem = document.getElementById('reader');
+      const toggleBtn = document.getElementById('toggleCameraBtn');
+      const feedback = document.getElementById('scanFeedback');
+
+      if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("reader");
+      }
+
+      if (isCameraRunning) {
+        html5QrCode.stop().then(() => {
+          readerElem.style.display = 'none';
+          toggleBtn.innerText = '📷 Open Phone Barcode Scanner';
+          feedback.innerText = 'Camera stopped';
+          isCameraRunning = false;
+        }).catch(err => console.error("Stop error:", err));
+      } else {
+        readerElem.style.display = 'block';
+        feedback.innerText = 'Requesting camera access...';
+
+        // Optimized for retail 1D barcodes
+        const config = {
+          fps: 12,
+          qrbox: { width: 280, height: 160 },
+          aspectRatio: 1.777778
+        };
+
+        html5QrCode.start(
+          { facingMode: "environment" },
+          config,
+          onBarcodeDetected,
+          onScanFailure
+        ).then(() => {
+          isCameraRunning = true;
+          toggleBtn.innerText = '⏹ Stop Camera Scanner';
+          feedback.innerText = 'Point camera at product barcode...';
+        }).catch(err => {
+          feedback.innerText = 'Camera access error: ' + err;
+          console.error(err);
+        });
+      }
+    }
+
+    async function onBarcodeDetected(decodedText) {
+      if (isScanningLocked) return;
+
+      // Debounce lock (1.5s) to avoid duplicate readings of the same item
+      isScanningLocked = true;
+      document.getElementById('scanFeedback').innerText = `Scanned: ${decodedText}...`;
+
+      await lookupBarcode(decodedText);
+
+      setTimeout(() => {
+        isScanningLocked = false;
+        const feedback = document.getElementById('scanFeedback');
+        if (feedback && isCameraRunning) {
+          feedback.innerText = 'Point camera at next barcode...';
+        }
+      }, 1500);
+    }
+
+    function onScanFailure(error) {
+      // Normal frame misses while aiming
+    }
+
+    function triggerMobileLookup() {
+      const input = document.getElementById('barcodeInput');
+      if (input && input.value.trim()) {
+        lookupBarcode(input.value.trim());
+        input.value = '';
+      }
+    }
+
+    document.getElementById('barcodeInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        triggerMobileLookup();
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+# Supermarket POS Requirements
+Flask>=3.0.0
+mysql-connector-python>=8.0.33
+python-dotenv>=1.0.0
+pyserial>=3.5
+python-escpos>=3.1

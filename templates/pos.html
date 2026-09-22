@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supermarket POS Terminal - Lane 01</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- Top Application Bar -->
+  <header class="top-bar">
+    <div class="brand-section">
+      <span class="brand-icon">🛒</span>
+      <div class="brand-title">METRO<span>POS</span> <small style="font-weight: 400; color: var(--text-muted); font-size: 0.75rem;">Lane 01</small></div>
+    </div>
+
+    <div class="system-status">
+      <span class="badge badge-online">● Online</span>
+      <span class="badge badge-db">DB: {{ db_type }}</span>
+      <span style="color: var(--text-secondary); font-family: var(--font-mono); font-size: 0.8rem;" id="liveClock">--:--:--</span>
+    </div>
+
+    <nav class="nav-links">
+      <a href="/" class="nav-btn active">Desktop Terminal</a>
+      <a href="/mobile" class="nav-btn">📷 Mobile Scanner</a>
+    </nav>
+  </header>
+
+  <!-- Quick Barcode Helper Bar -->
+  <div class="demo-barcodes">
+    <strong style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase;">Quick Test Items:</strong>
+    <button class="demo-chip" onclick="lookupBarcode('011110417001')">🥛 Milk ($1.50)</button>
+    <button class="demo-chip" onclick="lookupBarcode('041520000102')">🍞 Bread ($2.20)</button>
+    <button class="demo-chip" onclick="lookupBarcode('4011')">🍌 Bananas (kg)</button>
+    <button class="demo-chip" onclick="lookupBarcode('078742351864')">🍚 Basmati Rice ($5.50)</button>
+    <button class="demo-chip" onclick="lookupBarcode('049000028904')">🥤 Coke 330ml ($1.25)</button>
+    <button class="demo-chip" onclick="lookupBarcode('021130004928')">🍗 Chicken (kg)</button>
+    <button class="demo-chip" onclick="lookupBarcode('011110824106')">🥚 Eggs 12pk ($3.40)</button>
+  </div>
+
+  <!-- Main POS Workspace -->
+  <main class="pos-workspace">
+
+    <!-- Left: Scanning Bar & Cart Register (70%) -->
+    <section class="register-lane">
+      <div class="scan-toolbar">
+        <div class="barcode-input-wrap">
+          <span class="barcode-icon">🔍</span>
+          <input 
+            type="text" 
+            id="barcodeInput" 
+            class="barcode-input" 
+            placeholder="Scan Barcode / Enter PLU + Press Enter..." 
+            autofocus 
+            autocomplete="off"
+          >
+        </div>
+        <button class="tool-btn" onclick="triggerManualLookup()" title="Lookup Code">Enter</button>
+        <button class="tool-btn" onclick="triggerWeighedItemPrompt()" title="Scale Weigh (F8)">⚖️ Weighed (F8)</button>
+      </div>
+
+      <div class="cart-table-wrap">
+        <div id="cartEmpty" class="cart-empty">
+          <div class="empty-icon">🛒</div>
+          <h3>Lane Register Ready</h3>
+          <p>Scan a product barcode or tap a quick-test item above to begin.</p>
+        </div>
+
+        <table class="cart-table">
+          <thead>
+            <tr>
+              <th>Description & Barcode</th>
+              <th>Unit Price</th>
+              <th>Qty / Weight</th>
+              <th>Total</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="cartBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Right: Summary & Checkout Payment Panel (30%) -->
+    <aside class="checkout-panel">
+      <div>
+        <div class="summary-heading">
+          <span>Checkout</span>
+          <span id="itemCountLabel" style="font-size: 0.85rem; font-weight: normal; color: var(--text-muted);">0 Items</span>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-row">
+            <span>Subtotal:</span>
+            <span id="subtotalLabel" style="font-family: var(--font-mono); font-weight: 600;">$0.00</span>
+          </div>
+          <div class="summary-row">
+            <span>Sales Tax (8%):</span>
+            <span id="taxLabel" style="font-family: var(--font-mono); font-weight: 600;">$0.00</span>
+          </div>
+          <div class="summary-row grand-total">
+            <span>TOTAL:</span>
+            <span id="totalLabel">$0.00</span>
+          </div>
+        </div>
+
+        <div class="payment-section">
+          <div class="form-group">
+            <label class="form-label" for="payMethod">Payment Method</label>
+            <select id="payMethod" class="payment-select" onchange="calculateChange()">
+              <option value="CASH">💵 Cash</option>
+              <option value="CARD">💳 EMV / Chip & PIN</option>
+              <option value="MOBILE_MONEY">📱 Mobile Money / M-Pesa</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="tenderedInput">Amount Tendered ($)</label>
+            <input 
+              type="number" 
+              id="tenderedInput" 
+              class="payment-input" 
+              step="0.01" 
+              min="0" 
+              placeholder="0.00" 
+              oninput="calculateChange()"
+            >
+          </div>
+
+          <div class="change-due-box">
+            <span>Change Due:</span>
+            <span id="changeDueLabel" style="font-size: 1.25rem; font-family: var(--font-mono);">$0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+        <button id="payButton" class="btn-pay" onclick="handleCheckout()">
+          PAY & PRINT RECEIPT (F12)
+        </button>
+        <button class="btn-void" onclick="voidCart()">
+          Void Entire Transaction (Esc)
+        </button>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Thermal Receipt Modal -->
+  <div id="receiptModal" class="modal-backdrop">
+    <div class="receipt-modal-content">
+      <div id="receiptPaper" class="receipt-paper">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="receipt-actions">
+        <button class="btn-print" onclick="printThermalReceipt()">🖨️ Print (ESC/POS)</button>
+        <button class="btn-close" onclick="closeReceiptModal()">Close (Esc)</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/pos-engine.js"></script>
+  <script>
+    // Live Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('liveClock').innerText = now.toLocaleTimeString();
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Barcode scanner trigger on Enter key
+    const barcodeInput = document.getElementById('barcodeInput');
+    barcodeInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        triggerManualLookup();
+      }
+    });
+
+    function triggerManualLookup() {
+      const code = barcodeInput.value.trim();
+      if (code) {
+        lookupBarcode(code);
+        barcodeInput.value = '';
+      }
+    }
+
+    function triggerWeighedItemPrompt() {
+      const code = prompt('Enter Produce PLU Code (e.g., 4011 for Bananas, 4065 for Bell Peppers, 4131 for Apples):', '4011');
+      if (code) lookupBarcode(code);
+    }
+  </script>
+</body>
+</html>
