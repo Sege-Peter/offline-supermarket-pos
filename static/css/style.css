@@ -1238,48 +1238,284 @@ body {
 }
 
 /* ==========================================================
-   8. RESPONSIVENESS & MOBILE LAYOUTS
+   8. COMPREHENSIVE MOBILE RESPONSIVENESS & TOUCH ERGONOMICS
    ========================================================== */
-@media (max-width: 992px) {
+
+/* Prevent iOS auto-zoom on input focus */
+input, select, textarea {
+  font-size: 16px;
+  touch-action: manipulation;
+}
+
+button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile Sticky Bottom Checkout Bar */
+.mobile-sticky-checkout-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-panel);
+  border-top: 2px solid var(--border);
+  padding: 10px 16px;
+  z-index: 999;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.8);
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  backdrop-filter: blur(8px);
+}
+
+.mobile-bar-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-bar-count {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.mobile-bar-total {
+  font-size: 1.5rem;
+  font-weight: 900;
+  font-family: var(--font-mono);
+  color: var(--cyan-bright);
+}
+
+.mobile-bar-btn {
+  padding: 12px 20px !important;
+  font-size: 1.05rem !important;
+  border-radius: var(--radius-md) !important;
+  white-space: nowrap;
+}
+
+/* Tablet Breakpoint (<= 1024px) */
+@media (max-width: 1024px) {
   .pos-workspace {
     flex-direction: column;
   }
+  .lane-left {
+    border-right: none;
+    border-bottom: 2px solid var(--border);
+  }
   .lane-right {
     border-left: none;
-    border-top: 2px solid var(--border);
     min-width: 100%;
   }
 }
 
+/* Mobile Landscape & Tablet Small (<= 768px) */
 @media (max-width: 768px) {
+  body {
+    padding-bottom: 74px; /* Space for mobile sticky bar */
+  }
+
+  .mobile-sticky-checkout-bar {
+    display: flex;
+  }
+
+  /* Top Bar Mobile Layout */
   .top-bar {
     padding: 8px 12px;
+    gap: 8px;
   }
-  .brand-title {
+  .brand-logo-badge {
+    width: 30px;
+    height: 30px;
     font-size: 1rem;
   }
-  .tab-btn {
-    padding: 10px 14px;
-    font-size: 0.82rem;
+  .brand-title {
+    font-size: 0.98rem;
   }
+  .top-bar-controls {
+    gap: 6px;
+  }
+  .user-auth-pill {
+    padding: 4px 8px;
+    font-size: 0.78rem;
+  }
+  .currency-picker-wrap {
+    padding: 3px 8px;
+    font-size: 0.75rem;
+  }
+
+  /* Horizontal Scrolling Tab Bar */
+  .tab-bar {
+    padding: 0 8px;
+    gap: 4px;
+  }
+  .tab-btn {
+    padding: 10px 12px;
+    font-size: 0.8rem;
+    gap: 4px;
+  }
+
+  /* Scanner & Toolbar */
   .scanner-strip {
     padding: 10px 12px;
     flex-wrap: wrap;
+    gap: 8px;
   }
+  .input-barcode {
+    font-size: 1rem;
+    padding: 10px 10px 10px 38px;
+  }
+  .barcode-icon {
+    font-size: 1rem;
+    left: 10px;
+  }
+
+  /* Cashier Mini Buttons */
+  .tool-btn {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    min-height: 42px;
+  }
+  .demo-barcodes {
+    padding: 6px 12px;
+  }
+
+  /* Mobile Cart Card Transformation */
   .cart-table-wrap {
     padding: 8px 12px;
   }
+  .cart-table thead {
+    display: none;
+  }
+  .cart-table, .cart-table tbody, .cart-table tr, .cart-table td {
+    display: block;
+    width: 100%;
+  }
+  .cart-table tr {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    margin-bottom: 8px;
+    padding: 10px 12px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .cart-table td {
+    border-bottom: none;
+    padding: 0;
+  }
+  .cart-table td:nth-child(1) {
+    width: 82%;
+  }
+  .cart-table td:nth-child(5) {
+    width: 18%;
+    text-align: right;
+  }
+  .cart-table td:nth-child(2) {
+    display: none;
+  }
+  .cart-table td:nth-child(3) {
+    width: auto;
+  }
+  .cart-table td:nth-child(4) {
+    width: auto;
+    font-size: 1.1rem;
+  }
+  .qty-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 1.2rem;
+  }
+  .qty-display {
+    min-width: 32px;
+    font-size: 1rem;
+  }
+
+  /* Register Totals & Checkout Column */
   .lane-right {
+    padding: 16px 12px;
+  }
+  .totals-card {
     padding: 14px;
   }
   .grand-total-value {
     font-size: 1.8rem;
   }
-  .settings-container {
-    padding: 14px;
+  .btn-checkout-primary {
+    padding: 16px;
+    font-size: 1.15rem;
+    min-height: 52px;
+  }
+  .quick-cash-btn {
+    padding: 10px 4px;
+    font-size: 0.9rem;
+    min-height: 44px;
+  }
+  .pay-method-btn {
+    padding: 12px 6px;
+    font-size: 0.85rem;
+    min-height: 54px;
+  }
+
+  /* Modals on Mobile */
+  .receipt-modal-container {
+    width: 96%;
+    max-height: 94vh;
+  }
+  .receipt-scroll-wrap {
+    padding: 12px 6px;
   }
   .epos-thermal-paper {
     width: 100% !important;
+    padding: 14px 10px;
+    font-size: 10.5px;
+  }
+
+  .auth-modal-card {
+    width: 95%;
+    max-width: 340px;
+    padding: 18px 14px;
+  }
+  .keypad-btn {
+    height: 56px;
+    font-size: 1.4rem;
+  }
+
+  /* Settings on Mobile */
+  .settings-container {
+    padding: 12px;
+  }
+  .settings-section-card {
+    padding: 16px 12px;
+  }
+  .settings-grid-form {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* Smartphone Portrait (<= 480px) */
+@media (max-width: 480px) {
+  .brand-title small {
+    display: none;
+  }
+  #onlineBadge, #dbTypeBadge {
+    display: none;
+  }
+  .grand-total-value {
+    font-size: 1.6rem;
+  }
+  .demo-barcodes {
+    gap: 6px;
+  }
+  .demo-chip {
+    padding: 4px 8px;
+    font-size: 0.72rem;
   }
 }
 
@@ -1319,10 +1555,12 @@ body {
   .top-bar,
   .tab-bar,
   .pos-workspace,
-  .receipt-scroll-wrap {
+  .receipt-scroll-wrap,
+  .mobile-sticky-checkout-bar {
     background: transparent !important;
     display: block !important;
     border: none !important;
     padding: 0 !important;
   }
 }
+

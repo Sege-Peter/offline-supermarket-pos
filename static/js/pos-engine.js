@@ -338,13 +338,16 @@ function setTenderAmount(amt) {
 }
 
 function renderCart() {
-  const tbody = document.getElementById('cartItemsBody');
+  const tbody = document.getElementById('cartItemsBody') || document.getElementById('cartTableBody');
+
   const countBadge = document.getElementById('cartItemCount');
   const subtotalEl = document.getElementById('cartSubtotal');
   const taxEl = document.getElementById('cartTax');
   const grandTotalEl = document.getElementById('cartGrandTotal');
   const changeEl = document.getElementById('changeDueAmount');
   const tenderedInput = document.getElementById('tenderedInput');
+  const mobCount = document.getElementById('mobBarCount');
+  const mobTotal = document.getElementById('mobBarTotal');
 
   if (!tbody) return;
   tbody.innerHTML = "";
@@ -365,6 +368,8 @@ function renderCart() {
     if (taxEl) taxEl.innerText = formatMoney(0);
     if (grandTotalEl) grandTotalEl.innerText = formatMoney(0);
     if (changeEl) changeEl.innerText = formatMoney(0);
+    if (mobCount) mobCount.innerText = "0 ITEMS";
+    if (mobTotal) mobTotal.innerText = formatMoney(0);
     return;
   }
 
@@ -408,10 +413,30 @@ function renderCart() {
   if (taxEl) taxEl.innerText = formatMoney(tax);
   if (grandTotalEl) grandTotalEl.innerText = formatMoney(grandTotal);
 
+  if (mobCount) mobCount.innerText = `${Math.round(totalItemsCount)} ITEMS`;
+  if (mobTotal) mobTotal.innerText = formatMoney(grandTotal);
+
   const tenderedVal = tenderedInput ? parseFloat(tenderedInput.value || 0) : 0;
   const change = Math.max(0, tenderedVal - grandTotal);
   if (changeEl) changeEl.innerText = formatMoney(change);
 }
+
+function scrollToPaymentOrCheckout() {
+  if (cart.length === 0) {
+    playErrorTone();
+    showToast("Cart is empty!", "error");
+    return;
+  }
+  const paymentSec = document.querySelector('.payment-section');
+  if (paymentSec) {
+    paymentSec.scrollIntoView({ behavior: 'smooth' });
+  }
+  const tenderedInput = document.getElementById('tenderedInput');
+  if (tenderedInput && tenderedInput.value) {
+    handleCheckout();
+  }
+}
+
 
 // ==========================================
 // 4. ATOMIC CHECKOUT & RECEIPT ENGINE

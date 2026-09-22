@@ -584,10 +584,21 @@
  └──────────────────────────────────────────────────────┘</pre>
         </div>
       </div>
-    </div>
   </main>
 
+  <!-- Mobile Sticky Bottom Checkout Bar -->
+  <div class="mobile-sticky-checkout-bar" id="mobileStickyBar">
+    <div class="mobile-bar-info">
+      <span class="mobile-bar-count" id="mobBarCount">0 ITEMS</span>
+      <span class="mobile-bar-total" id="mobBarTotal">$0.00</span>
+    </div>
+    <button class="btn-checkout-primary mobile-bar-btn" onclick="scrollToPaymentOrCheckout()">
+      <span>⚡ Pay (F12)</span>
+    </button>
+  </div>
+
   <!-- ==========================================
+
        4. EPOS THERMAL RECEIPT MODAL (80mm / 58mm)
        ========================================== -->
   <div id="receiptModal" class="modal-backdrop">
