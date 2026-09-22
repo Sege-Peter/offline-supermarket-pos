@@ -5,191 +5,166 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Store Manager Dashboard - Metro Supermarket</title>
   <link rel="stylesheet" href="/static/css/style.css">
-  <style>
-    body { height: auto; min-height: 100vh; overflow-y: auto; }
-    .dashboard-container { max-width: 1200px; margin: 0 auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 24px; }
-    
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px;
-    }
-    .kpi-card {
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .kpi-title { font-size: 0.85rem; text-transform: uppercase; color: var(--text-secondary); font-weight: 700; }
-    .kpi-value { font-size: 2rem; font-weight: 800; font-family: var(--font-mono); color: var(--accent-green); }
-    .kpi-sub { font-size: 0.8rem; color: var(--text-muted); }
-
-    .dash-sections {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 20px;
-    }
-    @media (max-width: 900px) {
-      .dash-sections { grid-template-columns: 1fr; }
-    }
-
-    .section-card {
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 20px;
-    }
-    .section-header-title {
-      font-size: 1.15rem;
-      font-weight: 700;
-      margin-bottom: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-  </style>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
 </head>
-<body>
+<body style="height: auto; min-height: 100vh; overflow-y: auto;">
 
   <!-- Top Application Bar -->
   <header class="top-bar">
     <div class="brand-section">
-      <span class="brand-icon">🛒</span>
-      <div class="brand-title">METRO<span>MANAGER</span> <small style="color: var(--text-muted); font-size: 0.75rem;">Backoffice</small></div>
+      <div class="brand-logo-badge">⚡</div>
+      <div class="brand-title">
+        METRO<span class="highlight-cyan">POS</span> <span class="highlight-orange" style="font-size: 0.8rem; font-weight: 800;">DASHBOARD</span>
+      </div>
     </div>
 
-    <div class="system-status">
-      <span class="badge badge-online">● Server Connected</span>
-      <span class="badge badge-db">DB: {{ db_type }}</span>
+    <div class="top-bar-controls">
+      <div class="currency-picker-wrap" title="Change Active Store Currency">
+        <span>🌐</span>
+        <select id="currencyPicker" onchange="setCurrency(this.value); loadStats();"></select>
+      </div>
+
+      <div class="user-auth-pill" onclick="openAuthModal(null, 'Manager Authentication:')">
+        <span id="currentUserRole" class="user-role-tag manager">MANAGER</span>
+        <span id="currentUserName">Robert Vance (Store Mgr)</span>
+        <span>🔒</span>
+      </div>
+
+      <span class="badge badge-orange">👑 Manager Privileges Active</span>
+      <span style="color: var(--cyan-bright); font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700;" id="liveClock">--:--:--</span>
     </div>
 
-    <nav class="nav-links">
-      <a href="/" class="nav-btn">Register Lane</a>
-      <a href="/mobile" class="nav-btn">📷 Scanner</a>
-      <a href="/dashboard" class="nav-btn active">📊 Dashboard</a>
-      <a href="/inventory" class="nav-btn">📦 Inventory</a>
-      <a href="/reports" class="nav-btn">📜 Reports</a>
+    <nav style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <a href="/" class="tab-btn" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm);">💻 Terminal</a>
+      <a href="/mobile" class="tab-btn" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm);">📷 Mobile</a>
+      <a href="/dashboard" class="tab-btn active" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm);">📊 Dashboard</a>
+      <a href="/inventory" class="tab-btn" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm);">📦 Inventory</a>
+      <a href="/reports" class="tab-btn" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm);">📜 Reports</a>
     </nav>
   </header>
 
-  <main class="dashboard-container">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+  <main style="max-width: 1200px; margin: 0 auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 20px; width: 100%;">
+    <div class="settings-header-banner">
       <div>
-        <h1 style="font-size: 1.7rem; font-weight: 800;">Store Performance & Live Metrics</h1>
-        <p style="color: var(--text-secondary); font-size: 0.9rem;">Real-time checkout throughput, inventory valuation, and sales velocity.</p>
+        <h1 style="font-size: 1.5rem; color: var(--cyan-bright);">Executive Backoffice Dashboard</h1>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Real-time KPIs, turnover velocity, inventory valuation, and margin monitor.</p>
       </div>
-      <button class="nav-btn" onclick="loadDashboardData()" style="padding: 8px 16px; font-weight: 700;">🔄 Refresh Data</button>
+      <button class="tool-btn btn-cyan" onclick="loadStats()">🔄 Refresh KPIs</button>
     </div>
 
-    <!-- 4 Key Performance Indicators -->
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-title">Today's Gross Sales</div>
-        <div id="kpiRevenue" class="kpi-value">$0.00</div>
-        <div class="kpi-sub">Total revenue across all lanes</div>
+    <!-- 4 KPI Metrics -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
+      <div class="settings-section-card" style="border-left: 4px solid var(--cyan-primary);">
+        <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Gross Revenue (Today)</span>
+        <div id="kpiRevenue" style="font-size: 2rem; font-weight: 900; font-family: var(--font-mono); color: var(--cyan-bright);">$0.00</div>
+        <span style="font-size: 0.75rem; color: var(--text-muted);">Tax Collected: <strong id="kpiTax" style="color: var(--text-primary);">$0.00</strong></span>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-title">Transactions Completed</div>
-        <div id="kpiOrders" class="kpi-value" style="color: var(--accent-blue);">0</div>
-        <div class="kpi-sub">Customers checked out today</div>
+
+      <div class="settings-section-card" style="border-left: 4px solid var(--blue-primary);">
+        <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Transactions Settled</span>
+        <div id="kpiOrders" style="font-size: 2rem; font-weight: 900; font-family: var(--font-mono); color: #60a5fa;">0</div>
+        <span style="font-size: 0.75rem; color: var(--text-muted);">Atomic register checkouts</span>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-title">Average Basket Size</div>
-        <div id="kpiAvgBasket" class="kpi-value" style="color: var(--accent-amber);">$0.00</div>
-        <div class="kpi-sub">Average spend per receipt</div>
+
+      <div class="settings-section-card" style="border-left: 4px solid var(--orange-primary);">
+        <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Average Basket Size</span>
+        <div id="kpiAvgBasket" style="font-size: 2rem; font-weight: 900; font-family: var(--font-mono); color: var(--orange-bright);">$0.00</div>
+        <span style="font-size: 0.75rem; color: var(--text-muted);">Revenue per transaction</span>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-title">Low Stock SKUs</div>
-        <div id="kpiLowStock" class="kpi-value" style="color: var(--accent-red);">0</div>
-        <div class="kpi-sub">Items requiring shelf restocking</div>
+
+      <div class="settings-section-card" style="border-left: 4px solid var(--red-danger);">
+        <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Inventory Asset Valuation</span>
+        <div id="kpiAssetValue" style="font-size: 2rem; font-weight: 900; font-family: var(--font-mono); color: var(--green-success);">$0.00</div>
+        <span style="font-size: 0.75rem; color: var(--text-muted);">Active SKUs: <strong id="kpiTotalSkus" style="color: var(--text-primary);">0</strong> (<span id="kpiLowStock" style="color: var(--red-danger); font-weight: bold;">0</span> low stock)</span>
       </div>
     </div>
 
-    <!-- Grid Content -->
-    <div class="dash-sections">
-      <!-- Left: Top Selling Items -->
-      <div class="section-card">
-        <div class="section-header-title">
-          <span>🔥 Top-Selling Products Today</span>
-          <a href="/inventory" class="demo-chip" style="text-decoration: none;">View All SKUs ➔</a>
-        </div>
+    <!-- Top Selling Items & Inventory Alerts -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+      <div class="settings-section-card">
+        <h3 style="font-size: 1.1rem; color: var(--cyan-bright); margin-bottom: 12px;">🏆 Fast-Moving Supermarket Items</h3>
         <table class="cart-table">
           <thead>
             <tr>
               <th>Product Name</th>
-              <th>Units Sold</th>
-              <th>Gross Revenue</th>
+              <th>Volume Sold</th>
+              <th>Revenue Contributed</th>
             </tr>
           </thead>
           <tbody id="topProductsBody">
-            <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Loading sales metrics...</td></tr>
+            <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Loading live items...</td></tr>
           </tbody>
         </table>
       </div>
 
-      <!-- Right: Inventory Status & Quick Links -->
-      <div class="section-card">
-        <div class="section-header-title">
-          <span>📦 Inventory Health</span>
-        </div>
-        <div style="display: flex; flex-direction: column; gap: 16px;">
-          <div style="background: var(--bg-card); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border);">
-            <div style="color: var(--text-secondary); font-size: 0.85rem;">Total Inventory Value (Cost)</div>
-            <div id="invAssetValue" style="font-size: 1.5rem; font-weight: 800; font-family: var(--font-mono); color: var(--text-primary); margin-top: 4px;">$0.00</div>
+      <div class="settings-section-card">
+        <h3 style="font-size: 1.1rem; color: var(--orange-bright); margin-bottom: 12px;">⚡ Hardware & Network Health</h3>
+        <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.88rem;">
+          <div class="form-switch-row">
+            <span>MySQL Enterprise Daemon</span>
+            <span class="badge badge-green">Connected (3306)</span>
           </div>
-          <div style="background: var(--bg-card); padding: 16px; border-radius: var(--radius-md); border: 1px solid var(--border);">
-            <div style="color: var(--text-secondary); font-size: 0.85rem;">Active Supermarket SKUs</div>
-            <div id="invTotalSkus" style="font-size: 1.5rem; font-weight: 800; font-family: var(--font-mono); color: var(--accent-blue); margin-top: 4px;">0</div>
+          <div class="form-switch-row">
+            <span>ESC/POS 80mm Thermal Driver</span>
+            <span class="badge badge-cyan">Ready (USB/Network)</span>
           </div>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            <a href="/inventory" class="btn-action" style="text-align: center; text-decoration: none;">➕ Add New Product SKU</a>
-            <a href="/reports" class="btn-action" style="text-align: center; text-decoration: none;">🖨️ Generate Z-Report Till Close</a>
+          <div class="form-switch-row">
+            <span>RS-232 Digital Scale Service</span>
+            <span class="badge badge-blue">Ready (9600 Baud)</span>
+          </div>
+          <div class="form-switch-row">
+            <span>Offline Sync Batch Daemon</span>
+            <span class="badge badge-orange">Standby (0 Queued)</span>
           </div>
         </div>
       </div>
     </div>
   </main>
 
+  <script src="/static/js/pos-engine.js"></script>
   <script>
-    async function loadDashboardData() {
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('liveClock').innerText = now.toLocaleTimeString();
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    async function loadStats() {
       try {
         const res = await fetch('/api/stats');
         const data = await res.json();
-
         if (data.success) {
-          document.getElementById('kpiRevenue').innerText = `$${data.today.gross_revenue.toFixed(2)}`;
+          document.getElementById('kpiRevenue').innerText = formatMoney(data.today.gross_revenue);
+          document.getElementById('kpiTax').innerText = formatMoney(data.today.tax_collected);
           document.getElementById('kpiOrders').innerText = data.today.total_orders;
-          document.getElementById('kpiAvgBasket').innerText = `$${data.today.avg_basket.toFixed(2)}`;
+          document.getElementById('kpiAvgBasket').innerText = formatMoney(data.today.avg_basket);
+          document.getElementById('kpiAssetValue').innerText = formatMoney(data.inventory.asset_value);
+          document.getElementById('kpiTotalSkus').innerText = data.inventory.total_skus;
           document.getElementById('kpiLowStock').innerText = data.inventory.low_stock_count;
 
-          document.getElementById('invAssetValue').innerText = `$${data.inventory.asset_value.toFixed(2)}`;
-          document.getElementById('invTotalSkus').innerText = data.inventory.total_skus;
-
-          const topTbody = document.getElementById('topProductsBody');
-          topTbody.innerHTML = '';
+          const tbody = document.getElementById('topProductsBody');
+          tbody.innerHTML = '';
           if (!data.top_products || data.top_products.length === 0) {
-            topTbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No sales recorded today yet.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No sales recorded today yet.</td></tr>';
           } else {
             data.top_products.forEach(p => {
               const tr = document.createElement('tr');
               tr.innerHTML = `
-                <td><strong>${p.product_name}</strong></td>
-                <td><span class="badge badge-blue">${p.units_sold}</span></td>
-                <td style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-green);">$${parseFloat(p.revenue).toFixed(2)}</td>
+                <td><strong>${escapeHtml(p.product_name)}</strong></td>
+                <td><span class="badge badge-cyan">${p.units_sold}</span></td>
+                <td style="font-family: var(--font-mono); font-weight: 800; color: var(--cyan-bright);">${formatMoney(p.revenue)}</td>
               `;
-              topTbody.appendChild(tr);
+              tbody.appendChild(tr);
             });
           }
         }
       } catch (err) {
-        console.error("Dashboard error:", err);
+        console.error('Stats error:', err);
       }
     }
 
-    loadDashboardData();
+    document.addEventListener('DOMContentLoaded', loadStats);
   </script>
 </body>
 </html>

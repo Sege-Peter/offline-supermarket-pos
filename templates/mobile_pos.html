@@ -4,209 +4,141 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Mobile POS & Camera Scanner - Lane 01</title>
-  <!-- HTML5 QR & 1D Barcode Scanner Library -->
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <link rel="stylesheet" href="/static/css/style.css">
-  <style>
-    body {
-      height: auto;
-      min-height: 100vh;
-      overflow-y: auto;
-      padding-bottom: 30px;
-    }
-
-    .mobile-container {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .camera-card {
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    #reader {
-      width: 100%;
-      border-radius: var(--radius-md);
-      overflow: hidden;
-      background: #000;
-      display: none;
-    }
-
-    .btn-camera-toggle {
-      padding: 14px;
-      font-size: 1.05rem;
-      font-weight: 700;
-      background: var(--accent-blue);
-      color: #000;
-      border: none;
-      border-radius: var(--radius-md);
-      cursor: pointer;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .camera-feedback {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      text-align: center;
-      min-height: 1.2rem;
-      font-family: var(--font-mono);
-    }
-
-    .mobile-cart-card {
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 16px;
-    }
-
-    .cart-item-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .cart-item-row:last-child {
-      border-bottom: none;
-    }
-  </style>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📱</text></svg>">
 </head>
-<body>
+<body style="height: auto; min-height: 100vh; overflow-y: auto; padding-bottom: 80px;">
 
-  <!-- Top Mobile Bar -->
+  <!-- Top Application Bar -->
   <header class="top-bar">
     <div class="brand-section">
-      <span class="brand-icon">🛒</span>
-      <div class="brand-title">METRO<span>MOBILE</span></div>
+      <div class="brand-logo-badge">⚡</div>
+      <div class="brand-title">
+        METRO<span class="highlight-cyan">POS</span> <span class="highlight-orange" style="font-size: 0.8rem; font-weight: 800;">MOBILE</span>
+      </div>
     </div>
-    <nav class="nav-links">
-      <a href="/" class="nav-btn">Desktop</a>
-      <a href="/mobile" class="nav-btn active">📷 Scanner</a>
-      <a href="/dashboard" class="nav-btn">📊 Dash</a>
-      <a href="/inventory" class="nav-btn">📦 Stock</a>
-      <a href="/reports" class="nav-btn">📜 Reports</a>
+
+    <div class="top-bar-controls">
+      <div class="currency-picker-wrap" title="Change Active Store Currency">
+        <span>🌐</span>
+        <select id="currencyPicker"></select>
+      </div>
+
+      <div class="user-auth-pill" onclick="openAuthModal()">
+        <span id="currentUserRole" class="user-role-tag cashier">CASHIER</span>
+        <span id="currentUserName">Jane Doe</span>
+        <span>🔒</span>
+      </div>
+    </div>
+
+    <nav style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <a href="/" class="tab-btn" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm);">💻 Terminal</a>
+      <a href="/mobile" class="tab-btn active" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm);">📷 Mobile</a>
+      <a href="/dashboard" class="tab-btn" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm);">📊 Dashboard</a>
+      <a href="/inventory" class="tab-btn" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm);">📦 Inventory</a>
+      <a href="/reports" class="tab-btn" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm);">📜 Reports</a>
     </nav>
   </header>
 
-  <div class="mobile-container">
-    <!-- Camera Scanner Card -->
-    <div class="camera-card">
-      <button class="btn-camera-toggle" id="toggleCameraBtn" onclick="togglePhoneCamera()">
-        📷 Open Phone Barcode Scanner
-      </button>
-
-      <div id="reader"></div>
-      <div class="camera-feedback" id="scanFeedback">Camera is currently idle.</div>
-
-      <!-- Manual Barcode Fallback -->
-      <div class="scan-toolbar" style="padding: 0; background: transparent; border: none;">
-        <div class="barcode-input-wrap">
-          <span class="barcode-icon">🔍</span>
-          <input 
-            type="text" 
-            id="barcodeInput" 
-            class="barcode-input" 
-            placeholder="Type barcode & Enter..." 
-            style="font-size: 1rem; padding: 10px 12px 10px 38px;"
-          >
-        </div>
-        <button class="tool-btn" onclick="triggerMobileLookup()" style="padding: 10px 14px;">Add</button>
+  <main style="max-width: 600px; margin: 0 auto; padding: 16px; display: flex; flex-direction: column; gap: 16px;">
+    <!-- Camera Scanner Section -->
+    <div class="settings-section-card">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="font-size: 1.15rem; color: var(--cyan-bright);">📷 Barcode Camera Scanner</h2>
+        <button class="tool-btn btn-cyan" id="btnCameraToggle" onclick="toggleMobileCamera()">Start Camera</button>
       </div>
-
-      <!-- Quick Scan Pills -->
-      <div style="display: flex; gap: 6px; overflow-x: auto; padding-top: 4px;">
-        <button class="demo-chip" onclick="lookupBarcode('011110417001')">🥛 Milk</button>
-        <button class="demo-chip" onclick="lookupBarcode('041520000102')">🍞 Bread</button>
-        <button class="demo-chip" onclick="lookupBarcode('4011')">🍌 Bananas</button>
-        <button class="demo-chip" onclick="lookupBarcode('049000028904')">🥤 Coke</button>
+      <div id="mobileReader" style="width: 100%; border-radius: var(--radius-md); overflow: hidden; display: none; border: 2px solid var(--cyan-primary);"></div>
+      <div id="cameraStatus" style="padding: 10px; background: var(--bg-card); border-radius: var(--radius-sm); font-size: 0.85rem; font-family: var(--font-mono); color: var(--text-secondary); text-align: center;">
+        Ready to scan 1D UPC/EAN barcodes or 2D QR codes.
       </div>
     </div>
 
-    <!-- Mobile Cart Display -->
-    <div class="mobile-cart-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <h3 style="font-size: 1.15rem;">Shopping Cart</h3>
-        <span id="itemCountLabel" style="font-size: 0.85rem; color: var(--text-muted);">0 Items</span>
+    <!-- Manual Barcode Search -->
+    <div class="scanner-strip" style="background: var(--bg-panel); border-radius: var(--radius-md); border: 1px solid var(--border);">
+      <input type="text" id="barcodeInput" class="input-barcode" placeholder="Manual Barcode + Enter...">
+      <button class="tool-btn btn-cyan" onclick="triggerMobileBarcode()">Enter</button>
+    </div>
+
+    <!-- Mobile Cart List -->
+    <div class="settings-section-card" style="padding: 14px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h3 style="font-size: 1rem; color: var(--text-primary);">🛒 Current Basket (<span id="cartItemCount">0</span>)</h3>
+        <button class="btn-void" style="padding: 4px 10px; font-size: 0.8rem;" onclick="voidCart()">Clear</button>
       </div>
 
-      <div id="cartEmpty" class="cart-empty" style="padding: 30px 0;">
-        <div class="empty-icon" style="font-size: 2.2rem;">🛒</div>
-        <p style="font-size: 0.9rem;">No items scanned yet.</p>
+      <table class="cart-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Qty</th>
+            <th>Total</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="cartItemsBody"></tbody>
+      </table>
+
+      <div style="border-top: 2px solid var(--border); margin-top: 14px; padding-top: 12px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 1.1rem; font-weight: 800; color: var(--text-primary);">TOTAL:</span>
+        <span id="cartGrandTotal" style="font-size: 1.8rem; font-weight: 900; font-family: var(--font-mono); color: var(--cyan-bright);">$0.00</span>
       </div>
+    </div>
+  </main>
 
-      <div id="cartMobileList"></div>
+  <!-- Sticky Bottom Checkout Bar -->
+  <div style="position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-panel); border-top: 2px solid var(--border); padding: 12px 16px; display: flex; gap: 12px; align-items: center; z-index: 1000;">
+    <button class="btn-checkout-primary" style="flex: 1; padding: 14px;" onclick="handleCheckout()">
+      <span>⚡ Complete Sale</span>
+    </button>
+  </div>
 
-      <!-- Summary -->
-      <div class="summary-card" style="margin-top: 14px; margin-bottom: 14px;">
-        <div class="summary-row">
-          <span>Subtotal:</span>
-          <span id="subtotalLabel" style="font-family: var(--font-mono); font-weight: 600;">$0.00</span>
+  <!-- EPOS Thermal Receipt Modal (80mm / 58mm) -->
+  <div id="receiptModal" class="modal-backdrop">
+    <div class="receipt-modal-container">
+      <div class="receipt-modal-header">
+        <h3>🧾 EPOS Thermal Receipt</h3>
+        <div class="paper-width-switch">
+          <button class="paper-width-btn" data-width="80mm" onclick="setReceiptPaperWidth('80mm')">80mm</button>
+          <button class="paper-width-btn active" data-width="58mm" onclick="setReceiptPaperWidth('58mm')">58mm</button>
         </div>
-        <div class="summary-row">
-          <span>Tax (8%):</span>
-          <span id="taxLabel" style="font-family: var(--font-mono); font-weight: 600;">$0.00</span>
-        </div>
-        <div class="summary-row grand-total" style="font-size: 1.6rem;">
-          <span>TOTAL:</span>
-          <span id="totalLabel">$0.00</span>
-        </div>
       </div>
-
-      <!-- Payment & Checkout -->
-      <div class="form-group" style="margin-bottom: 12px;">
-        <label class="form-label" for="payMethod">Payment Method</label>
-        <select id="payMethod" class="payment-select" onchange="calculateChange()">
-          <option value="CASH">💵 Cash</option>
-          <option value="CARD">💳 Card / Contactless</option>
-          <option value="MOBILE_MONEY">📱 Mobile Money</option>
-        </select>
+      <div class="receipt-scroll-wrap">
+        <div id="eposThermalPaper" class="epos-thermal-paper width-58mm"></div>
       </div>
-
-      <div class="form-group" style="margin-bottom: 14px;">
-        <label class="form-label" for="tenderedInput">Amount Tendered ($)</label>
-        <input 
-          type="number" 
-          id="tenderedInput" 
-          class="payment-input" 
-          step="0.01" 
-          placeholder="0.00" 
-          oninput="calculateChange()"
-        >
+      <div class="receipt-modal-actions">
+        <button class="btn-print-action" onclick="printThermalReceipt()">
+          <span>🖨️ Print Receipt</span>
+        </button>
+        <button class="btn-modal-close" onclick="closeReceiptModal()">Close</button>
       </div>
-
-      <div class="change-due-box" style="margin-bottom: 14px;">
-        <span>Change Due:</span>
-        <span id="changeDueLabel" style="font-size: 1.15rem; font-family: var(--font-mono);">$0.00</span>
-      </div>
-
-      <button id="payButton" class="btn-pay" onclick="handleCheckout()" style="width: 100%;">
-        COMPLETE CHECKOUT
-      </button>
     </div>
   </div>
 
-  <!-- Thermal Receipt Modal -->
-  <div id="receiptModal" class="modal-backdrop">
-    <div class="receipt-modal-content">
-      <div id="receiptPaper" class="receipt-paper"></div>
-      <div class="receipt-actions">
-        <button class="btn-print" onclick="printThermalReceipt()">🖨️ Print</button>
-        <button class="btn-close" onclick="closeReceiptModal()">Close</button>
+  <!-- Admin PIN Auth Modal -->
+  <div id="authModal" class="modal-backdrop">
+    <div class="auth-modal-card">
+      <div class="auth-lock-icon">🔒</div>
+      <h3 class="auth-title">Authorization Required</h3>
+      <p class="auth-subtitle" id="authModalSubtitle">Enter PIN to authenticate:</p>
+      <div class="pin-display-dots">
+        <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
       </div>
+      <div class="keypad-grid">
+        <button class="keypad-btn" onclick="pressPinKey('1')">1</button>
+        <button class="keypad-btn" onclick="pressPinKey('2')">2</button>
+        <button class="keypad-btn" onclick="pressPinKey('3')">3</button>
+        <button class="keypad-btn" onclick="pressPinKey('4')">4</button>
+        <button class="keypad-btn" onclick="pressPinKey('5')">5</button>
+        <button class="keypad-btn" onclick="pressPinKey('6')">6</button>
+        <button class="keypad-btn" onclick="pressPinKey('7')">7</button>
+        <button class="keypad-btn" onclick="pressPinKey('8')">8</button>
+        <button class="keypad-btn" onclick="pressPinKey('9')">9</button>
+        <button class="keypad-btn action-btn action-clear" onclick="clearPin()">C</button>
+        <button class="keypad-btn" onclick="pressPinKey('0')">0</button>
+        <button class="keypad-btn action-btn action-enter" onclick="submitPin()">OK</button>
+      </div>
+      <button class="tool-btn" style="width: 100%; justify-content: center; font-size: 0.8rem; margin-top: 8px;" onclick="closeAuthModal()">Cancel</button>
     </div>
   </div>
 
@@ -214,120 +146,60 @@
   <script>
     let html5QrCode = null;
     let isCameraRunning = false;
-    let isScanningLocked = false;
 
-    // Overwrite renderCart for mobile list representation
-    const originalRenderCart = renderCart;
-    renderCart = function() {
-      originalRenderCart();
+    function toggleMobileCamera() {
+      const reader = document.getElementById('mobileReader');
+      const btn = document.getElementById('btnCameraToggle');
+      const fb = document.getElementById('cameraStatus');
 
-      const mobileList = document.getElementById('cartMobileList');
-      if (!mobileList) return;
-
-      mobileList.innerHTML = '';
-      if (cart.length === 0) return;
-
-      cart.forEach(item => {
-        const lineTotal = (item.price * item.quantity).toFixed(2);
-        const div = document.createElement('div');
-        div.className = 'cart-item-row';
-        div.innerHTML = `
-          <div>
-            <div class="item-name">${escapeHtml(item.name)}</div>
-            <div class="item-meta">$${item.price.toFixed(2)} x ${item.quantity} ${item.is_weighed ? item.unit_of_measure : ''}</div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div class="qty-control">
-              <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)">−</button>
-              <span class="qty-display">${item.quantity}</span>
-              <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
-            </div>
-            <span style="font-weight: 700; font-family: var(--font-mono); min-width: 55px; text-align: right;">$${lineTotal}</span>
-            <button class="btn-remove" onclick="removeFromCart(${item.id})">&times;</button>
-          </div>
-        `;
-        mobileList.appendChild(div);
-      });
-    };
-
-    function togglePhoneCamera() {
-      const readerElem = document.getElementById('reader');
-      const toggleBtn = document.getElementById('toggleCameraBtn');
-      const feedback = document.getElementById('scanFeedback');
-
-      if (!html5QrCode) {
-        html5QrCode = new Html5Qrcode("reader");
-      }
+      if (!html5QrCode) html5QrCode = new Html5Qrcode("mobileReader");
 
       if (isCameraRunning) {
         html5QrCode.stop().then(() => {
-          readerElem.style.display = 'none';
-          toggleBtn.innerText = '📷 Open Phone Barcode Scanner';
-          feedback.innerText = 'Camera stopped';
+          reader.style.display = 'none';
+          btn.innerText = 'Start Camera';
+          btn.className = 'tool-btn btn-cyan';
+          fb.innerText = 'Camera stopped.';
           isCameraRunning = false;
-        }).catch(err => console.error("Stop error:", err));
+        });
       } else {
-        readerElem.style.display = 'block';
-        feedback.innerText = 'Requesting camera access...';
-
-        // Optimized for retail 1D barcodes
-        const config = {
-          fps: 12,
-          qrbox: { width: 280, height: 160 },
-          aspectRatio: 1.777778
-        };
-
+        reader.style.display = 'block';
+        fb.innerText = 'Initializing camera...';
         html5QrCode.start(
           { facingMode: "environment" },
-          config,
-          onBarcodeDetected,
-          onScanFailure
+          { fps: 12, qrbox: { width: 280, height: 160 } },
+          (decodedText) => {
+            playBeep(1760, 0.1);
+            fb.innerText = `Scanned: ${decodedText}`;
+            lookupBarcode(decodedText);
+          },
+          () => {}
         ).then(() => {
+          btn.innerText = 'Stop Camera';
+          btn.className = 'tool-btn btn-orange';
+          fb.innerText = 'Scanning... Align barcode in the reticle.';
           isCameraRunning = true;
-          toggleBtn.innerText = '⏹ Stop Camera Scanner';
-          feedback.innerText = 'Point camera at product barcode...';
         }).catch(err => {
-          feedback.innerText = 'Camera access error: ' + err;
-          console.error(err);
+          fb.innerText = 'Camera error: ' + err;
         });
       }
     }
 
-    async function onBarcodeDetected(decodedText) {
-      if (isScanningLocked) return;
-
-      // Debounce lock (1.5s) to avoid duplicate readings of the same item
-      isScanningLocked = true;
-      document.getElementById('scanFeedback').innerText = `Scanned: ${decodedText}...`;
-
-      await lookupBarcode(decodedText);
-
-      setTimeout(() => {
-        isScanningLocked = false;
-        const feedback = document.getElementById('scanFeedback');
-        if (feedback && isCameraRunning) {
-          feedback.innerText = 'Point camera at next barcode...';
+    const bInput = document.getElementById('barcodeInput');
+    if (bInput) {
+      bInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          triggerMobileBarcode();
         }
-      }, 1500);
+      });
     }
 
-    function onScanFailure(error) {
-      // Normal frame misses while aiming
-    }
-
-    function triggerMobileLookup() {
-      const input = document.getElementById('barcodeInput');
-      if (input && input.value.trim()) {
-        lookupBarcode(input.value.trim());
-        input.value = '';
+    function triggerMobileBarcode() {
+      if (bInput && bInput.value) {
+        lookupBarcode(bInput.value);
+        bInput.value = '';
       }
     }
-
-    document.getElementById('barcodeInput').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        triggerMobileLookup();
-      }
-    });
   </script>
 </body>
 </html>

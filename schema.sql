@@ -116,6 +116,13 @@ CREATE TABLE IF NOT EXISTS offline_sync_batches (
     synced_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+-- 9. System & Store Configuration Settings
+CREATE TABLE IF NOT EXISTS store_settings (
+    setting_key VARCHAR(64) PRIMARY KEY,
+    setting_value TEXT NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
 -- ==========================================================
 -- Baseline Supermarket Seed Data
 -- ==========================================================
@@ -149,3 +156,26 @@ INSERT IGNORE INTO products (barcode, name, category, price, cost_price, stock_q
 INSERT IGNORE INTO cashiers (username, full_name, pin_hash, role) VALUES
 ('lane01', 'Jane Doe (Lane 01)', '1234', 'CASHIER'),
 ('manager', 'Robert Vance (Store Mgr)', '9999', 'MANAGER');
+
+INSERT IGNORE INTO store_settings (setting_key, setting_value) VALUES
+('store_name', 'Metro Fresh Supermarket'),
+('branch_name', 'Downtown Flagship - Lane 01'),
+('store_address', '104 Market Street, Central City'),
+('store_phone', '+1 (555) 392-8800'),
+('store_vat', 'US-TAX-8492041'),
+('receipt_header', 'Welcome to Metro Fresh Supermarket\nFresh Quality Daily Guarantee'),
+('receipt_footer', 'Thank you for shopping at Metro Fresh!\nReturns accepted within 14 days with receipt.\nVisit www.metrofresh.com'),
+('currency_code', 'USD'),
+('currency_symbol', '$'),
+('currency_position', 'BEFORE'),
+('currency_decimals', '2'),
+('tax_rate', '8.0'),
+('tax_mode', 'EXCLUSIVE'),
+('receipt_width', '80mm'),
+('auto_print_receipt', 'true'),
+('drawer_kick_enabled', 'true'),
+('beep_enabled', 'true'),
+('scale_baud', '9600'),
+('manager_pin', '9999'),
+('cashier_pin', '1234');
+

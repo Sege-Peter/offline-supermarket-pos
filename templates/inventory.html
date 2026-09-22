@@ -5,340 +5,277 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inventory Management - Metro Supermarket</title>
   <link rel="stylesheet" href="/static/css/style.css">
-  <style>
-    body { height: auto; min-height: 100vh; overflow-y: auto; }
-    .inv-container { max-width: 1200px; margin: 0 auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 20px; }
-    
-    .inv-controls {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      background: var(--bg-panel);
-      padding: 16px 20px;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
-    }
-
-    .filter-group {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex: 1;
-      max-width: 600px;
-    }
-
-    .filter-input {
-      flex: 1;
-      padding: 10px 14px;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-md);
-      color: var(--text-primary);
-      outline: none;
-    }
-    .filter-input:focus { border-color: var(--accent-blue); }
-
-    /* Modal Form Styling */
-    .form-modal {
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      width: 480px;
-      max-width: 90vw;
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      color: var(--text-primary);
-    }
-  </style>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
 </head>
-<body>
+<body style="height: auto; min-height: 100vh; overflow-y: auto;">
 
   <!-- Top Application Bar -->
   <header class="top-bar">
     <div class="brand-section">
-      <span class="brand-icon">🛒</span>
-      <div class="brand-title">METRO<span>INVENTORY</span> <small style="color: var(--text-muted); font-size: 0.75rem;">Catalog & Stock</small></div>
+      <div class="brand-logo-badge">⚡</div>
+      <div class="brand-title">
+        METRO<span class="highlight-cyan">POS</span> <span class="highlight-orange" style="font-size: 0.8rem; font-weight: 800;">INVENTORY</span>
+      </div>
     </div>
 
-    <div class="system-status">
-      <span class="badge badge-online">● MySQL Active</span>
-      <span class="badge badge-db">DB: {{ db_type }}</span>
+    <div class="top-bar-controls">
+      <div class="currency-picker-wrap" title="Change Active Store Currency">
+        <span>🌐</span>
+        <select id="currencyPicker" onchange="setCurrency(this.value); loadProducts();"></select>
+      </div>
+
+      <div class="user-auth-pill" onclick="openAuthModal(null, 'Manager Authorization:')">
+        <span id="currentUserRole" class="user-role-tag cashier">CASHIER</span>
+        <span id="currentUserName">Jane Doe (Lane 01)</span>
+        <span>🔒</span>
+      </div>
+
+      <span class="badge badge-green">● Lane Online</span>
+      <span style="color: var(--cyan-bright); font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700;" id="liveClock">--:--:--</span>
     </div>
 
-    <nav class="nav-links">
-      <a href="/" class="nav-btn">Register Lane</a>
-      <a href="/mobile" class="nav-btn">📷 Scanner</a>
-      <a href="/dashboard" class="nav-btn">📊 Dashboard</a>
-      <a href="/inventory" class="nav-btn active">📦 Inventory</a>
-      <a href="/reports" class="nav-btn">📜 Reports</a>
+    <nav style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <a href="/" class="tab-btn" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm);">💻 Terminal</a>
+      <a href="/mobile" class="tab-btn" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm);">📷 Mobile</a>
+      <a href="/dashboard" class="tab-btn" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm);">📊 Dashboard</a>
+      <a href="/inventory" class="tab-btn active" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm);">📦 Inventory</a>
+      <a href="/reports" class="tab-btn" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm);">📜 Reports</a>
     </nav>
   </header>
 
-  <main class="inv-container">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+  <main style="max-width: 1200px; margin: 0 auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 20px; width: 100%;">
+    <div class="settings-header-banner">
       <div>
-        <h1 style="font-size: 1.7rem; font-weight: 800;">Supermarket Inventory Catalog</h1>
-        <p style="color: var(--text-secondary); font-size: 0.9rem;">Manage retail barcodes, weighed produce (PLU), cost prices, and minimum stock alerts.</p>
+        <h1 style="font-size: 1.5rem; color: var(--cyan-bright);">Catalog & Inventory Management</h1>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Sub-second barcode lookup maintenance, stock counting, cost margins, and PLU rates.</p>
       </div>
-      <button class="btn-pay" style="padding: 10px 20px; font-size: 0.95rem;" onclick="openAddModal()">
-        ➕ Add New Product SKU
-      </button>
+      <button class="btn-checkout-primary" style="padding: 10px 18px; font-size: 0.9rem;" onclick="requireAdmin(openAddModal, 'Adding New SKU')">+ Add New SKU</button>
     </div>
 
     <!-- Search & Filter Controls -->
-    <div class="inv-controls">
-      <div class="filter-group">
-        <input type="text" id="searchInput" class="filter-input" placeholder="Search by Barcode or Product Name..." oninput="filterProducts()">
-        <select id="categorySelect" class="filter-input" style="max-width: 200px;" onchange="filterProducts()">
+    <div class="settings-section-card" style="padding: 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+      <div style="flex: 1; min-width: 260px;">
+        <input type="text" id="searchInput" class="input-barcode" style="padding: 10px 14px;" placeholder="Search SKU by name or barcode..." oninput="loadProducts()">
+      </div>
+      <div>
+        <select id="categoryFilter" class="form-select" onchange="loadProducts()">
           <option value="">All Categories</option>
           <option value="Dairy & Eggs">Dairy & Eggs</option>
           <option value="Bakery">Bakery</option>
-          <option value="Produce">Produce</option>
+          <option value="Produce">Produce (Weighed)</option>
           <option value="Grains & Pasta">Grains & Pasta</option>
           <option value="Beverages">Beverages</option>
           <option value="Meat & Poultry">Meat & Poultry</option>
           <option value="Snacks">Snacks</option>
         </select>
       </div>
-      <span id="productCountBadge" style="color: var(--text-muted); font-size: 0.85rem;">Loading catalog...</span>
     </div>
 
-    <!-- Products Table -->
-    <div style="background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden;">
+    <!-- Inventory Table -->
+    <div class="settings-section-card" style="padding: 14px;">
       <table class="cart-table">
         <thead>
           <tr>
             <th>Barcode / PLU</th>
             <th>Product Name</th>
             <th>Category</th>
-            <th>Retail Price</th>
+            <th>Selling Price</th>
             <th>Cost Price</th>
             <th>Stock Level</th>
             <th>Type</th>
-            <th>Actions</th>
+            <th>Action</th>
           </tr>
         </thead>
-        <tbody id="inventoryTableBody">
-          <tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text-muted);">Loading supermarket inventory...</td></tr>
+        <tbody id="inventoryBody">
+          <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">Loading database catalog...</td></tr>
         </tbody>
       </table>
     </div>
   </main>
 
   <!-- Add Product Modal -->
-  <div id="productModal" class="modal-backdrop">
-    <div class="form-modal">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
-        <h3 id="modalTitle">Add New Supermarket SKU</h3>
-        <button onclick="closeProductModal()" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
-      </div>
-
-      <form id="productForm" onsubmit="saveProduct(event)">
-        <input type="hidden" id="prodId">
-        <div class="form-group" style="margin-bottom: 10px;">
-          <label class="form-label">Barcode / PLU Code *</label>
-          <input type="text" id="prodBarcode" class="payment-input" required placeholder="e.g. 011110417001 or 4011">
+  <div id="addModal" class="modal-backdrop">
+    <div style="background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-lg); width: 440px; max-width: 90vw; padding: 24px;">
+      <h3 style="color: var(--cyan-bright); margin-bottom: 16px;">📦 Register New Supermarket SKU</h3>
+      <form onsubmit="handleCreateProduct(event)" style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="form-group">
+          <label class="form-label">Barcode / PLU Code</label>
+          <input type="text" id="addBarcode" class="form-input" required placeholder="e.g. 011110417001">
         </div>
-        <div class="form-group" style="margin-bottom: 10px;">
-          <label class="form-label">Product Name *</label>
-          <input type="text" id="prodName" class="payment-input" required placeholder="e.g. Whole Milk 1L">
+        <div class="form-group">
+          <label class="form-label">Product Name</label>
+          <input type="text" id="addName" class="form-input" required placeholder="e.g. Whole Milk 1L">
         </div>
-        <div class="form-group" style="margin-bottom: 10px;">
+        <div class="form-group">
           <label class="form-label">Category</label>
-          <select id="prodCategory" class="payment-select">
-            <option value="Dairy & Eggs">Dairy & Eggs</option>
-            <option value="Bakery">Bakery</option>
-            <option value="Produce">Produce</option>
-            <option value="Grains & Pasta">Grains & Pasta</option>
-            <option value="Beverages">Beverages</option>
-            <option value="Meat & Poultry">Meat & Poultry</option>
-            <option value="Snacks">Snacks</option>
-            <option value="General">General</option>
-          </select>
+          <input type="text" id="addCategory" class="form-input" required placeholder="e.g. Dairy & Eggs">
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-          <div class="form-group">
-            <label class="form-label">Retail Price ($) *</label>
-            <input type="number" id="prodPrice" class="payment-input" step="0.01" required placeholder="1.50">
+        <div style="display: flex; gap: 10px;">
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label">Selling Price</label>
+            <input type="number" id="addPrice" class="form-input" step="0.01" required placeholder="2.50">
           </div>
-          <div class="form-group">
-            <label class="form-label">Cost Price ($)</label>
-            <input type="number" id="prodCost" class="payment-input" step="0.01" placeholder="1.10">
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label">Cost Price</label>
+            <input type="number" id="addCost" class="form-input" step="0.01" required placeholder="1.50">
           </div>
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
-          <div class="form-group">
-            <label class="form-label">Initial Stock Qty</label>
-            <input type="number" id="prodStock" class="payment-input" step="0.001" value="50.0">
+        <div style="display: flex; gap: 10px;">
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label">Initial Stock</label>
+            <input type="number" id="addStock" class="form-input" step="0.1" required placeholder="100">
           </div>
-          <div class="form-group">
-            <label class="form-label">Sold by Weight?</label>
-            <select id="prodWeighed" class="payment-select">
-              <option value="0">No (Unit / Each)</option>
-              <option value="1">Yes (Kilogram / kg)</option>
+          <div class="form-group" style="flex: 1;">
+            <label class="form-label">Type</label>
+            <select id="addWeighed" class="form-select">
+              <option value="0">Packaged Unit</option>
+              <option value="1">Weighed (kg)</option>
             </select>
           </div>
         </div>
         <div style="display: flex; gap: 10px; margin-top: 10px;">
-          <button type="submit" class="btn-pay" style="flex: 1; padding: 12px; font-size: 1rem;">Save SKU</button>
-          <button type="button" class="btn-void" style="padding: 12px 20px;" onclick="closeProductModal()">Cancel</button>
+          <button type="submit" class="btn-checkout-primary" style="flex: 1; padding: 12px;">Save SKU</button>
+          <button type="button" class="tool-btn" onclick="closeAddModal()">Cancel</button>
         </div>
       </form>
     </div>
   </div>
 
+  <!-- Admin PIN Auth Modal -->
+  <div id="authModal" class="modal-backdrop">
+    <div class="auth-modal-card">
+      <div class="auth-lock-icon">🔒</div>
+      <h3 class="auth-title">Authorization Required</h3>
+      <p class="auth-subtitle" id="authModalSubtitle">Enter PIN to authenticate:</p>
+      <div class="pin-display-dots">
+        <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+      </div>
+      <div class="keypad-grid">
+        <button class="keypad-btn" onclick="pressPinKey('1')">1</button>
+        <button class="keypad-btn" onclick="pressPinKey('2')">2</button>
+        <button class="keypad-btn" onclick="pressPinKey('3')">3</button>
+        <button class="keypad-btn" onclick="pressPinKey('4')">4</button>
+        <button class="keypad-btn" onclick="pressPinKey('5')">5</button>
+        <button class="keypad-btn" onclick="pressPinKey('6')">6</button>
+        <button class="keypad-btn" onclick="pressPinKey('7')">7</button>
+        <button class="keypad-btn" onclick="pressPinKey('8')">8</button>
+        <button class="keypad-btn" onclick="pressPinKey('9')">9</button>
+        <button class="keypad-btn action-btn action-clear" onclick="clearPin()">C</button>
+        <button class="keypad-btn" onclick="pressPinKey('0')">0</button>
+        <button class="keypad-btn action-btn action-enter" onclick="submitPin()">OK</button>
+      </div>
+      <button class="tool-btn" style="width: 100%; justify-content: center; font-size: 0.8rem; margin-top: 8px;" onclick="closeAuthModal()">Cancel</button>
+    </div>
+  </div>
+
+  <script src="/static/js/pos-engine.js"></script>
   <script>
-    let allProducts = [];
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('liveClock').innerText = now.toLocaleTimeString();
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
 
     async function loadProducts() {
+      const q = document.getElementById('searchInput').value.trim();
+      const cat = document.getElementById('categoryFilter').value.trim();
+      let url = '/api/products';
+      const params = [];
+      if (q) params.push(`q=${encodeURIComponent(q)}`);
+      if (cat) params.push(`category=${encodeURIComponent(cat)}`);
+      if (params.length) url += `?${params.join('&')}`;
+
       try {
-        const res = await fetch('/api/products');
+        const res = await fetch(url);
         const data = await res.json();
-        if (data.success) {
-          allProducts = data.products;
-          renderProductTable(allProducts);
+        const tbody = document.getElementById('inventoryBody');
+        tbody.innerHTML = '';
+
+        if (!data.products || data.products.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No products found matching query.</td></tr>';
+          return;
         }
-      } catch (e) {
-        console.error("Fetch products failed:", e);
-      }
-    }
 
-    function renderProductTable(prods) {
-      const tbody = document.getElementById('inventoryTableBody');
-      const countEl = document.getElementById('productCountBadge');
-      countEl.innerText = `Showing ${prods.length} Supermarket SKUs`;
-
-      tbody.innerHTML = '';
-      if (prods.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">No matching products found.</td></tr>';
-        return;
-      }
-
-      prods.forEach(p => {
-        const isLow = p.stock_quantity <= 10;
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><code>${p.barcode}</code></td>
-          <td><strong>${p.name}</strong></td>
-          <td><span class="badge" style="background: rgba(255,255,255,0.06);">${p.category || 'General'}</span></td>
-          <td style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-green);">$${p.price.toFixed(2)}</td>
-          <td style="font-family: var(--font-mono); color: var(--text-muted);">$${p.cost_price ? p.cost_price.toFixed(2) : '0.00'}</td>
-          <td style="font-family: var(--font-mono); font-weight: 700; color: ${isLow ? 'var(--accent-red)' : 'var(--text-primary)'};">
-            ${p.stock_quantity} ${p.is_weighed ? 'kg' : 'units'} ${isLow ? '⚠️ LOW' : ''}
-          </td>
-          <td>${p.is_weighed ? '⚖️ Weighed' : '🏷️ Unit'}</td>
-          <td>
-            <button class="demo-chip" onclick="openEditModal(${p.id})">Edit</button>
-            <button class="demo-chip" onclick="adjustStockPrompt(${p.id}, '${p.name}')">Stock +/-</button>
-            <button class="demo-chip" style="color: var(--accent-red); border-color: rgba(239,68,68,0.3);" onclick="deleteProduct(${p.id}, '${p.name}')">&times;</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function filterProducts() {
-      const q = document.getElementById('searchInput').value.toLowerCase().trim();
-      const cat = document.getElementById('categorySelect').value;
-
-      const filtered = allProducts.filter(p => {
-        const matchQ = !q || p.name.toLowerCase().includes(q) || p.barcode.toLowerCase().includes(q);
-        const matchCat = !cat || p.category === cat;
-        return matchQ && matchCat;
-      });
-      renderProductTable(filtered);
-    }
-
-    function openAddModal() {
-      document.getElementById('modalTitle').innerText = 'Add New Supermarket SKU';
-      document.getElementById('productForm').reset();
-      document.getElementById('prodId').value = '';
-      document.getElementById('productModal').classList.add('active');
-    }
-
-    function openEditModal(id) {
-      const prod = allProducts.find(p => p.id === id);
-      if (!prod) return;
-      document.getElementById('modalTitle').innerText = `Edit: ${prod.name}`;
-      document.getElementById('prodId').value = prod.id;
-      document.getElementById('prodBarcode').value = prod.barcode;
-      document.getElementById('prodName').value = prod.name;
-      document.getElementById('prodCategory').value = prod.category || 'General';
-      document.getElementById('prodPrice').value = prod.price;
-      document.getElementById('prodCost').value = prod.cost_price || 0;
-      document.getElementById('prodStock').value = prod.stock_quantity;
-      document.getElementById('prodWeighed').value = prod.is_weighed ? '1' : '0';
-      document.getElementById('productModal').classList.add('active');
-    }
-
-    function closeProductModal() {
-      document.getElementById('productModal').classList.remove('active');
-    }
-
-    async function saveProduct(e) {
-      e.preventDefault();
-      const id = document.getElementById('prodId').value;
-      const payload = {
-        barcode: document.getElementById('prodBarcode').value.trim(),
-        name: document.getElementById('prodName').value.trim(),
-        category: document.getElementById('prodCategory').value,
-        price: parseFloat(document.getElementById('prodPrice').value),
-        cost_price: parseFloat(document.getElementById('prodCost').value) || 0,
-        stock_quantity: parseFloat(document.getElementById('prodStock').value) || 0,
-        is_weighed: document.getElementById('prodWeighed').value === '1'
-      };
-
-      try {
-        const url = id ? `/api/products/${id}` : '/api/products';
-        const method = id ? 'PUT' : 'POST';
-        const res = await fetch(url, {
-          method: method,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+        data.products.forEach(p => {
+          const isLow = p.stock_quantity <= 10;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><code>${escapeHtml(p.barcode)}</code></td>
+            <td><strong>${escapeHtml(p.name)}</strong></td>
+            <td>${escapeHtml(p.category || 'General')}</td>
+            <td style="font-family: var(--font-mono); font-weight: 700; color: var(--cyan-bright);">${formatMoney(p.price)}</td>
+            <td style="font-family: var(--font-mono); color: var(--text-muted);">${formatMoney(p.cost_price || p.price * 0.65)}</td>
+            <td style="color: ${isLow ? 'var(--red-danger)' : 'var(--green-success)'}; font-weight: bold; font-family: var(--font-mono);">
+              ${p.stock_quantity} ${p.unit_of_measure} ${isLow ? '⚠️ LOW' : ''}
+            </td>
+            <td>${p.is_weighed ? '⚖️ Weighed' : '🏷️ Unit'}</td>
+            <td>
+              <button class="demo-chip" onclick="adjustStockDirect(${p.id}, '${escapeHtml(p.name)}')">Stock +/-</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
         });
-        const result = await res.json();
-        if (result.success) {
-          closeProductModal();
-          loadProducts();
-        } else {
-          alert('Error: ' + result.message);
-        }
       } catch (err) {
-        alert('Network error saving product');
+        console.error('Error loading inventory:', err);
       }
     }
 
-    async function adjustStockPrompt(id, name) {
-      const addQty = prompt(`Adjust stock for '${name}' (Enter positive number to add, negative to subtract):`, "10");
-      if (addQty !== null) {
-        const delta = parseFloat(addQty);
-        if (!isNaN(delta)) {
-          const prod = allProducts.find(p => p.id === id);
-          if (prod) {
-            const newStock = Math.max(0, prod.stock_quantity + delta);
+    function adjustStockDirect(id, name) {
+      requireAdmin(async () => {
+        const delta = prompt(`Add or subtract stock for '${name}':`, "10");
+        if (delta && !isNaN(parseFloat(delta))) {
+          try {
             await fetch(`/api/products/${id}`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ stock_quantity: newStock })
+              body: JSON.stringify({ stock_delta: parseFloat(delta) })
             });
             loadProducts();
+            showToast(`Stock updated for ${name}`, 'success');
+          } catch (e) {
+            showToast('Error updating stock', 'error');
           }
         }
+      }, 'Stock Adjustment');
+    }
+
+    function openAddModal() { document.getElementById('addModal').classList.add('active'); }
+    function closeAddModal() { document.getElementById('addModal').classList.remove('active'); }
+
+    async function handleCreateProduct(e) {
+      e.preventDefault();
+      const payload = {
+        barcode: document.getElementById('addBarcode').value.trim(),
+        name: document.getElementById('addName').value.trim(),
+        category: document.getElementById('addCategory').value.trim(),
+        price: parseFloat(document.getElementById('addPrice').value),
+        cost_price: parseFloat(document.getElementById('addCost').value),
+        stock_quantity: parseFloat(document.getElementById('addStock').value),
+        is_weighed: document.getElementById('addWeighed').value === '1',
+        unit_of_measure: document.getElementById('addWeighed').value === '1' ? 'kg' : 'unit'
+      };
+
+      try {
+        const res = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          closeAddModal();
+          loadProducts();
+          showToast(`Product '${payload.name}' added successfully`, 'success');
+        } else {
+          alert('Error: ' + data.message);
+        }
+      } catch (err) {
+        alert('Could not save product');
       }
     }
 
-    async function deleteProduct(id, name) {
-      if (confirm(`Are you sure you want to delete '${name}' from inventory?`)) {
-        await fetch(`/api/products/${id}`, { method: 'DELETE' });
-        loadProducts();
-      }
-    }
-
-    loadProducts();
+    document.addEventListener('DOMContentLoaded', loadProducts);
   </script>
 </body>
 </html>

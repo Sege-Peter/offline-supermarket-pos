@@ -3,261 +3,265 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sales Reports & Z-Report - Metro Supermarket</title>
+  <title>Sales Audit & Z-Report - Metro Supermarket</title>
   <link rel="stylesheet" href="/static/css/style.css">
-  <style>
-    body { height: auto; min-height: 100vh; overflow-y: auto; }
-    .reports-container { max-width: 1200px; margin: 0 auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 20px; }
-    .z-report-card {
-      background: var(--bg-panel);
-      border: 1.5px solid var(--accent-green);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-  </style>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📜</text></svg>">
 </head>
-<body>
+<body style="height: auto; min-height: 100vh; overflow-y: auto;">
 
   <!-- Top Application Bar -->
   <header class="top-bar">
     <div class="brand-section">
-      <span class="brand-icon">🛒</span>
-      <div class="brand-title">METRO<span>REPORTS</span> <small style="color: var(--text-muted); font-size: 0.75rem;">Audit & Reconciliation</small></div>
+      <div class="brand-logo-badge">⚡</div>
+      <div class="brand-title">
+        METRO<span class="highlight-cyan">POS</span> <span class="highlight-orange" style="font-size: 0.8rem; font-weight: 800;">AUDIT</span>
+      </div>
     </div>
 
-    <div class="system-status">
-      <span class="badge badge-online">● Online</span>
-      <span class="badge badge-db">DB: {{ db_type }}</span>
+    <div class="top-bar-controls">
+      <div class="currency-picker-wrap" title="Change Active Store Currency">
+        <span>🌐</span>
+        <select id="currencyPicker" onchange="setCurrency(this.value); loadSalesReport(); loadZReport();"></select>
+      </div>
+
+      <div class="user-auth-pill" onclick="openAuthModal(null, 'Manager Authorization:')">
+        <span id="currentUserRole" class="user-role-tag manager">MANAGER</span>
+        <span id="currentUserName">Robert Vance (Store Mgr)</span>
+        <span>🔒</span>
+      </div>
+
+      <span class="badge badge-green">● Lane Online</span>
+      <span style="color: var(--cyan-bright); font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700;" id="liveClock">--:--:--</span>
     </div>
 
-    <nav class="nav-links">
-      <a href="/" class="nav-btn">Register Lane</a>
-      <a href="/mobile" class="nav-btn">📷 Scanner</a>
-      <a href="/dashboard" class="nav-btn">📊 Dashboard</a>
-      <a href="/inventory" class="nav-btn">📦 Inventory</a>
-      <a href="/reports" class="nav-btn active">📜 Reports</a>
+    <nav style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <a href="/" class="tab-btn" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm);">💻 Terminal</a>
+      <a href="/mobile" class="tab-btn" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm);">📷 Mobile</a>
+      <a href="/dashboard" class="tab-btn" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm);">📊 Dashboard</a>
+      <a href="/inventory" class="tab-btn" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm);">📦 Inventory</a>
+      <a href="/reports" class="tab-btn active" style="padding: 6px 12px; font-size: 0.85rem; border-radius: var(--radius-sm);">📜 Reports</a>
     </nav>
   </header>
 
-  <main class="reports-container">
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+  <main style="max-width: 1200px; margin: 0 auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 20px; width: 100%;">
+    <div class="settings-header-banner">
       <div>
-        <h1 style="font-size: 1.7rem; font-weight: 800;">Cashier Reconciliation & Sales Audit</h1>
-        <p style="color: var(--text-secondary); font-size: 0.9rem;">Generate End-of-Day Z-Reports, view transaction logs, and reprint receipts.</p>
+        <h1 style="font-size: 1.5rem; color: var(--cyan-bright);">Cashier Till Reconciliation & Sales Audit</h1>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Daily Z-Reports, till float balancing, cashier shift audit, and reprintable thermal receipts.</p>
       </div>
       <div style="display: flex; gap: 10px;">
-        <button class="nav-btn" onclick="loadZReport()">🖨️ Generate Z-Report</button>
-        <button class="nav-btn" onclick="exportToCsv()">📥 Export to CSV</button>
+        <button class="tool-btn btn-orange" onclick="requireAdmin(printZReport, 'Printing Official Z-Report')">🖨️ Print Z-Report</button>
+        <button class="tool-btn btn-cyan" onclick="exportToCsv()">📥 Export to CSV</button>
       </div>
     </div>
 
     <!-- Z-Report Summary Box -->
-    <div id="zReportSection" class="z-report-card">
+    <div class="settings-section-card" style="border: 2px solid var(--orange-primary);">
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 12px;">
         <div>
-          <span class="badge badge-green">End-of-Day Balancing</span>
-          <h2 style="font-size: 1.3rem; margin-top: 6px;">Daily Z-Report & Drawer Reconciliation</h2>
+          <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--orange-bright);">Official Z-Report Summary (Terminal LANE-01)</h2>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Date: <strong id="zDate" style="color: var(--text-primary);">Today</strong> | Store: Metro Fresh Flagship</span>
         </div>
-        <span id="zReportDate" style="font-family: var(--font-mono); color: var(--text-secondary);">Today</span>
+        <span class="badge badge-orange">End-Of-Day Audit</span>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 16px 0;">
         <div style="background: var(--bg-card); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border);">
-          <div style="color: var(--text-secondary); font-size: 0.8rem;">Opening Till Float</div>
-          <div id="zFloat" style="font-size: 1.3rem; font-weight: 800; font-family: var(--font-mono); color: var(--text-primary); margin-top: 4px;">$100.00</div>
+          <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);">Opening Float</span>
+          <div id="zFloat" style="font-size: 1.5rem; font-weight: 800; font-family: var(--font-mono); color: var(--text-primary);">$100.00</div>
         </div>
         <div style="background: var(--bg-card); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border);">
-          <div style="color: var(--text-secondary); font-size: 0.8rem;">Cash Payments Collected</div>
-          <div id="zCashSales" style="font-size: 1.3rem; font-weight: 800; font-family: var(--font-mono); color: var(--accent-green); margin-top: 4px;">$0.00</div>
+          <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);">Total Cash Sales</span>
+          <div id="zCashSales" style="font-size: 1.5rem; font-weight: 800; font-family: var(--font-mono); color: var(--green-success);">$0.00</div>
         </div>
         <div style="background: var(--bg-card); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border);">
-          <div style="color: var(--text-secondary); font-size: 0.8rem;">Expected Cash in Drawer</div>
-          <div id="zExpectedCash" style="font-size: 1.3rem; font-weight: 800; font-family: var(--font-mono); color: var(--accent-blue); margin-top: 4px;">$100.00</div>
+          <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);">Digital Sales (Card/Mobile)</span>
+          <div id="zDigitalSales" style="font-size: 1.5rem; font-weight: 800; font-family: var(--font-mono); color: #60a5fa;">$0.00</div>
         </div>
-        <div style="background: var(--bg-card); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border);">
-          <div style="color: var(--text-secondary); font-size: 0.8rem;">Net Sales + Tax</div>
-          <div id="zGrossTotal" style="font-size: 1.3rem; font-weight: 800; font-family: var(--font-mono); color: var(--accent-amber); margin-top: 4px;">$0.00</div>
+        <div style="background: var(--bg-card); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--cyan-primary);">
+          <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--cyan-bright); font-weight: 700;">Expected Cash in Drawer</span>
+          <div id="zExpectedCash" style="font-size: 1.5rem; font-weight: 800; font-family: var(--font-mono); color: var(--cyan-bright);">$100.00</div>
         </div>
       </div>
     </div>
 
-    <!-- Sales Transaction Ledger -->
-    <div style="background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden;">
-      <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="font-size: 1.1rem;">Transaction Audit Trail</h3>
-        <span id="txCountBadge" style="color: var(--text-muted); font-size: 0.85rem;">0 Transactions</span>
-      </div>
-
+    <!-- Sales History Table -->
+    <div class="settings-section-card" style="padding: 14px;">
+      <h3 style="font-size: 1.15rem; color: var(--cyan-bright); margin-bottom: 12px;">📜 Recent Supermarket Sales (Live Audit Log)</h3>
       <table class="cart-table">
         <thead>
           <tr>
             <th>Receipt #</th>
             <th>Timestamp</th>
             <th>Terminal & Cashier</th>
-            <th>Payment Method</th>
+            <th>Method</th>
             <th>Subtotal</th>
             <th>Tax</th>
-            <th>Total Paid</th>
-            <th>Actions</th>
+            <th>Total</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody id="salesTableBody">
-          <tr><td colspan="8" style="text-align: center; padding: 40px; color: var(--text-muted);">Loading transactions...</td></tr>
+          <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">Loading sales log...</td></tr>
         </tbody>
       </table>
     </div>
   </main>
 
-  <!-- Thermal Receipt Modal -->
+  <!-- EPOS Thermal Receipt Modal (80mm / 58mm) -->
   <div id="receiptModal" class="modal-backdrop">
-    <div class="receipt-modal-content">
-      <div id="receiptPaper" class="receipt-paper"></div>
-      <div class="receipt-actions">
-        <button class="btn-print" onclick="window.print()">🖨️ Print Receipt</button>
-        <button class="btn-close" onclick="closeReceiptModal()">Close</button>
+    <div class="receipt-modal-container">
+      <div class="receipt-modal-header">
+        <h3>🧾 EPOS Thermal Receipt</h3>
+        <div class="paper-width-switch">
+          <button class="paper-width-btn active" data-width="80mm" onclick="setReceiptPaperWidth('80mm')">80mm</button>
+          <button class="paper-width-btn" data-width="58mm" onclick="setReceiptPaperWidth('58mm')">58mm</button>
+        </div>
+      </div>
+      <div class="receipt-scroll-wrap">
+        <div id="eposThermalPaper" class="epos-thermal-paper"></div>
+      </div>
+      <div class="receipt-modal-actions">
+        <button class="btn-print-action" onclick="printThermalReceipt()">
+          <span>🖨️ Print Receipt</span>
+        </button>
+        <button class="btn-copy-escpos" onclick="copyEscPosCommands()">
+          <span>📋 ESC/POS Hex</span>
+        </button>
+        <button class="btn-modal-close" onclick="closeReceiptModal()">Close</button>
       </div>
     </div>
   </div>
 
+  <!-- Admin PIN Auth Modal -->
+  <div id="authModal" class="modal-backdrop">
+    <div class="auth-modal-card">
+      <div class="auth-lock-icon">🔒</div>
+      <h3 class="auth-title">Authorization Required</h3>
+      <p class="auth-subtitle" id="authModalSubtitle">Enter PIN to authenticate:</p>
+      <div class="pin-display-dots">
+        <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+      </div>
+      <div class="keypad-grid">
+        <button class="keypad-btn" onclick="pressPinKey('1')">1</button>
+        <button class="keypad-btn" onclick="pressPinKey('2')">2</button>
+        <button class="keypad-btn" onclick="pressPinKey('3')">3</button>
+        <button class="keypad-btn" onclick="pressPinKey('4')">4</button>
+        <button class="keypad-btn" onclick="pressPinKey('5')">5</button>
+        <button class="keypad-btn" onclick="pressPinKey('6')">6</button>
+        <button class="keypad-btn" onclick="pressPinKey('7')">7</button>
+        <button class="keypad-btn" onclick="pressPinKey('8')">8</button>
+        <button class="keypad-btn" onclick="pressPinKey('9')">9</button>
+        <button class="keypad-btn action-btn action-clear" onclick="clearPin()">C</button>
+        <button class="keypad-btn" onclick="pressPinKey('0')">0</button>
+        <button class="keypad-btn action-btn action-enter" onclick="submitPin()">OK</button>
+      </div>
+      <button class="tool-btn" style="width: 100%; justify-content: center; font-size: 0.8rem; margin-top: 8px;" onclick="closeAuthModal()">Cancel</button>
+    </div>
+  </div>
+
+  <script src="/static/js/pos-engine.js"></script>
   <script>
-    let salesData = [];
+    let rawSales = [];
 
-    async function loadReports() {
-      try {
-        const res = await fetch('/api/reports/sales?limit=100');
-        const data = await res.json();
-        if (data.success) {
-          salesData = data.sales;
-          renderSalesTable(salesData);
-        }
-      } catch (err) {
-        console.error("Sales report error:", err);
-      }
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('liveClock').innerText = now.toLocaleTimeString();
     }
-
-    function renderSalesTable(sales) {
-      const tbody = document.getElementById('salesTableBody');
-      document.getElementById('txCountBadge').innerText = `${sales.length} Audited Transactions`;
-
-      tbody.innerHTML = '';
-      if (sales.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">No sales recorded yet.</td></tr>';
-        return;
-      }
-
-      sales.forEach(s => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><code>${s.receipt_number}</code></td>
-          <td style="color: var(--text-secondary); font-size: 0.85rem;">${s.created_at}</td>
-          <td>${s.terminal_id || 'LANE-01'} • ${s.cashier_name}</td>
-          <td><span class="badge badge-blue">${s.payment_method}</span></td>
-          <td>$${s.subtotal.toFixed(2)}</td>
-          <td>$${s.tax.toFixed(2)}</td>
-          <td style="font-family: var(--font-mono); font-weight: 700; color: var(--accent-green);">$${s.total.toFixed(2)}</td>
-          <td>
-            <button class="demo-chip" onclick="reprintReceipt('${s.receipt_number}')">View / Print</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
+    setInterval(updateClock, 1000);
+    updateClock();
 
     async function loadZReport() {
       try {
         const res = await fetch('/api/reports/z-report');
         const data = await res.json();
         if (data.success) {
-          document.getElementById('zReportDate').innerText = `Date: ${data.report_date}`;
-          document.getElementById('zFloat').innerText = `$${data.opening_float.toFixed(2)}`;
-          document.getElementById('zCashSales').innerText = `$${data.cash_sales.toFixed(2)}`;
-          document.getElementById('zExpectedCash').innerText = `$${data.expected_cash.toFixed(2)}`;
-          document.getElementById('zGrossTotal').innerText = `$${(data.summary.grand_total || 0).toFixed(2)}`;
-        }
-      } catch (e) {
-        console.error("Z-report error:", e);
-      }
-    }
+          document.getElementById('zDate').innerText = data.report_date;
+          document.getElementById('zFloat').innerText = formatMoney(data.opening_float);
+          document.getElementById('zCashSales').innerText = formatMoney(data.cash_sales);
+          document.getElementById('zExpectedCash').innerText = formatMoney(data.expected_cash);
 
-    async function reprintReceipt(receiptNo) {
-      try {
-        const res = await fetch(`/api/receipt/${receiptNo}`);
-        const data = await res.json();
-        if (data.success) {
-          const paper = document.getElementById('receiptPaper');
-          const sale = data.sale;
-          let itemsHtml = '';
-          (data.items || []).forEach(i => {
-            itemsHtml += `
-              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                <span>${i.product_name.substring(0, 18)}</span>
-                <span>${i.quantity} x ${parseFloat(i.unit_price).toFixed(2)}</span>
-                <span>$${parseFloat(i.total_price).toFixed(2)}</span>
-              </div>
-            `;
+          let digital = 0;
+          (data.payment_breakdown || []).forEach(m => {
+            if (m.payment_method !== 'CASH') digital += parseFloat(m.method_total);
           });
-
-          paper.innerHTML = `
-            <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 8px;">
-              <h3 style="margin: 0; font-size: 16px;">METRO FRESH SUPERMARKET</h3>
-              <p style="margin: 2px 0;">100 Retail Boulevard, Sector 4</p>
-              <p style="margin: 2px 0;">Tax ID: TAX-US-99201948</p>
-            </div>
-            <div style="font-size: 11px; margin-bottom: 8px;">
-              <div><strong>Receipt:</strong> ${sale.receipt_number}</div>
-              <div><strong>Date:</strong> ${sale.created_at}</div>
-              <div><strong>Till:</strong> ${sale.terminal_id || 'LANE-01'} | <strong>Cashier:</strong> ${sale.cashier_name}</div>
-            </div>
-            <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 6px 0; margin-bottom: 8px;">
-              ${itemsHtml}
-            </div>
-            <div style="margin-bottom: 8px;">
-              <div style="display: flex; justify-content: space-between;"><span>Subtotal:</span><span>$${parseFloat(sale.subtotal).toFixed(2)}</span></div>
-              <div style="display: flex; justify-content: space-between;"><span>Tax (8%):</span><span>$${parseFloat(sale.tax).toFixed(2)}</span></div>
-              <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; margin-top: 4px;">
-                <span>TOTAL:</span><span>$${parseFloat(sale.total).toFixed(2)}</span>
-              </div>
-            </div>
-            <div style="border-top: 1px dashed #000; padding-top: 6px; margin-bottom: 8px;">
-              <div style="display: flex; justify-content: space-between;"><span>${sale.payment_method}:</span><span>$${parseFloat(sale.amount_tendered).toFixed(2)}</span></div>
-              <div style="display: flex; justify-content: space-between;"><span>CHANGE DUE:</span><span>$${parseFloat(sale.change_due).toFixed(2)}</span></div>
-            </div>
-            <div style="text-align: center; font-size: 10px; margin-top: 12px; border-top: 1px dashed #000; padding-top: 8px;">
-              DUPLICATE / REPRINT RECEIPT<br>
-              Thank you for shopping local!
-            </div>
-          `;
-
-          document.getElementById('receiptModal').classList.add('active');
+          document.getElementById('zDigitalSales').innerText = formatMoney(digital);
         }
       } catch (err) {
-        alert('Could not retrieve receipt data');
+        console.error('Z-Report fetch error:', err);
       }
     }
 
-    function closeReceiptModal() {
-      document.getElementById('receiptModal').classList.remove('active');
+    async function loadSalesReport() {
+      try {
+        const res = await fetch('/api/reports/sales?limit=50');
+        const data = await res.json();
+        const tbody = document.getElementById('salesTableBody');
+        tbody.innerHTML = '';
+
+        if (!data.sales || data.sales.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted);">No sales recorded in database.</td></tr>';
+          return;
+        }
+
+        rawSales = data.sales;
+        data.sales.forEach(s => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><code>${escapeHtml(s.receipt_number)}</code></td>
+            <td>${s.created_at}</td>
+            <td>${escapeHtml(s.cashier_name)}</td>
+            <td><span class="badge badge-cyan">${s.payment_method}</span></td>
+            <td>${formatMoney(s.subtotal)}</td>
+            <td>${formatMoney(s.tax)}</td>
+            <td style="font-weight: 800; color: var(--cyan-bright); font-family: var(--font-mono);">${formatMoney(s.total)}</td>
+            <td>
+              <button class="tool-btn btn-cyan" style="padding: 4px 10px; font-size: 0.75rem;" onclick="reprintDbReceipt('${escapeHtml(s.receipt_number)}')">🖨️ Reprint</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error('Sales audit fetch error:', err);
+      }
+    }
+
+    async function reprintDbReceipt(receiptNo) {
+      try {
+        const res = await fetch(`/api/receipt/${encodeURIComponent(receiptNo)}`);
+        const data = await res.json();
+        if (data.success && data.sale) {
+          showReceiptModal({
+            ...data.sale,
+            items: data.items || []
+          });
+        }
+      } catch (e) {
+        alert('Could not load receipt details');
+      }
+    }
+
+    function printZReport() {
+      window.print();
     }
 
     function exportToCsv() {
-      if (salesData.length === 0) return alert('No sales data to export.');
-      let csv = "ReceiptNumber,Timestamp,Cashier,PaymentMethod,Subtotal,Tax,Discount,Total\n";
-      salesData.forEach(s => {
-        csv += `"${s.receipt_number}","${s.created_at}","${s.cashier_name}","${s.payment_method}",${s.subtotal},${s.tax},${s.discount},${s.total}\n`;
+      if (rawSales.length === 0) return alert('No sales data to export.');
+      let csv = "ReceiptNumber,DateTime,Cashier,Method,Subtotal,Tax,Total\n";
+      rawSales.forEach(s => {
+        csv += `"${s.receipt_number}","${s.created_at}","${s.cashier_name}","${s.payment_method}",${s.subtotal},${s.tax},${s.total}\n`;
       });
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `sales_report_${new Date().toISOString().slice(0,10)}.csv`;
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `sales_report_${Date.now()}.csv`;
       a.click();
     }
 
-    loadReports();
-    loadZReport();
+    document.addEventListener('DOMContentLoaded', () => {
+      loadZReport();
+      loadSalesReport();
+    });
   </script>
 </body>
 </html>

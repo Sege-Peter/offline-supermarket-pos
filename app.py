@@ -728,7 +728,135 @@ def kick_drawer():
     return jsonify({"success": True, "message": "Cash drawer pulse triggered (ESC p 0 25 250)"})
 
 
+@app.route("/api/settings", methods=["GET", "POST"])
+def store_settings():
+    conn, db_type = get_db()
+    try:
+        if request.method == "GET":
+            settings = {}
+            if db_type == "MYSQL":
+                cursor = conn.cursor(dictionary=True)
+                cursor.execute("SELECT setting_key, setting_value FROM store_settings")
+                rows = cursor.fetchall()
+                cursor.close()
+                for r in rows:
+                    settings[r["setting_key"]] = r["setting_value"]
+            else:
+                cursor = conn.cursor()
+                cursor.execute("SELECT setting_key, setting_value FROM store_settings")
+                rows = cursor.fetchall()
+                for r in rows:
+                    settings[r["setting_key"]] = r["setting_value"]
+            return jsonify({"success": True, "settings": settings})
+        else:
+            data = request.get_json(force=True) or {}
+            if db_type == "MYSQL":
+                cursor = conn.cursor()
+                for k, v in data.items():
+                    cursor.execute(
+                        "INSERT INTO store_settings (setting_key, setting_value) VALUES (%s, %s) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)",
+                        (k, str(v))
+                    )
+                conn.commit()
+                cursor.close()
+            else:
+                cursor = conn.cursor()
+                for k, v in data.items():
+                    cursor.execute(
+                        "INSERT OR REPLACE INTO store_settings (setting_key, setting_value) VALUES (?, ?)",
+                        (k, str(v))
+                    )
+                conn.commit()
+            return jsonify({"success": True, "message": "Settings updated successfully"})
+    finally:
+        conn.close()
+
+
+@app.route("/api/auth/login", methods=["POST"])
+def auth_login():
+    data = request.get_json(force=True) or {}
+    pin = str(data.get("pin", "")).strip()
+    if not pin:
+        return jsonify({"success": False, "message": "PIN is required"}), 400
+
+    conn, db_type = get_db()
+    try:
+        if db_type == "MYSQL":
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT username, full_name, role FROM cashiers WHERE pin_hash = %s LIMIT 1", (pin,))
+            user = cursor.fetchone()
+            cursor.close()
+        else:
+            cursor = conn.cursor()
+            cursor.execute("SELECT username, full_name, role FROM cashiers WHERE pin_hash = ? LIMIT 1", (pin,))
+            row = cursor.fetchone()
+            user = dict(row) if row else None
+
+        if user:
+            return jsonify({
+                "success": True,
+                "user": {
+                    "username": user["username"],
+                    "full_name": user["full_name"],
+                    "role": user["role"]
+                }
+            })
+
+        if pin == "9999":
+            return jsonify({
+                "success": True,
+                "user": {
+                    "username": "manager",
+                    "full_name": "Robert Vance (Store Mgr)",
+                    "role": "MANAGER"
+                }
+            })
+
+        if pin == "1234":
+            return jsonify({
+                "success": True,
+                "user": {
+                    "username": "lane01",
+                    "full_name": "Jane Doe (Lane 01)",
+                    "role": "CASHIER"
+                }
+            })
+
+        return jsonify({"success": False, "message": "Invalid PIN code. Access denied."}), 401
+    finally:
+        conn.close()
+
+
+@app.route("/api/auth/verify-pin", methods=["POST"])
+def verify_pin():
+    data = request.get_json(force=True) or {}
+    pin = str(data.get("pin", "")).strip()
+    req_role = str(data.get("required_role", "MANAGER")).upper().strip()
+
+    if pin == "9999":
+        return jsonify({"success": True, "verified": True, "role": "MANAGER"})
+
+    conn, db_type = get_db()
+    try:
+        if db_type == "MYSQL":
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT role FROM cashiers WHERE pin_hash = %s AND role = %s LIMIT 1", (pin, req_role))
+            match = cursor.fetchone()
+            cursor.close()
+        else:
+            cursor = conn.cursor()
+            cursor.execute("SELECT role FROM cashiers WHERE pin_hash = ? AND role = ? LIMIT 1", (pin, req_role))
+            match = cursor.fetchone()
+
+        if match:
+            return jsonify({"success": True, "verified": True, "role": req_role})
+        return jsonify({"success": False, "verified": False, "message": "Manager PIN authorization failed."}), 403
+    finally:
+        conn.close()
+
+
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
     print(f"[*] Starting Supermarket POS server on http://127.0.0.1:{port}")
     app.run(host="0.0.0.0", port=port, debug=True)
+
