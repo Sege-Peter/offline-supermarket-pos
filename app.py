@@ -18,6 +18,12 @@ except ImportError:
     MYSQL_AVAILABLE = False
     MySQLError = Exception
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 app = Flask(__name__, static_folder="static", template_folder="templates")
 
 # ==========================================
@@ -26,7 +32,7 @@ app = Flask(__name__, static_folder="static", template_folder="templates")
 DB_CONFIG = {
     "host": os.getenv("DB_HOST", "localhost"),
     "user": os.getenv("DB_USER", "root"),
-    "password": os.getenv("DB_PASSWORD", "rootpassword"),
+    "password": os.getenv("DB_PASSWORD", ""),
     "database": os.getenv("DB_NAME", "supermarket_pos"),
     "port": int(os.getenv("DB_PORT", "3306")),
 }
