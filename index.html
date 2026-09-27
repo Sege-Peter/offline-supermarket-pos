@@ -616,7 +616,7 @@
             <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Active Shift Duration: <span id="shiftTimeTracker">00:00:00</span></div>
           </div>
           <div style="display: flex; gap: 10px;">
-            <button class="tool-btn btn-cyan" onclick="toggleShiftStatus()">Clock In</button>
+            <button class="tool-btn btn-cyan" onclick="toggleShiftStatus(this)">Clock In</button>
             <button class="tool-btn btn-orange" onclick="showToast(`Break started. Terminal locked.`, 'warning')">Start Break</button>
           </div>
         </div>
@@ -1473,7 +1473,7 @@
       sale.items.forEach(item => {
         tbody.innerHTML += `<tr>
           <td>${item.name}</td>
-          <td>${item.quantity} ${item.unit_of_measure}</td>
+          <td>${item.quantity} ${item.unit_of_measure || ""}</td>
           <td>${formatMoney(item.price)}</td>
           <td><button class="tool-btn btn-orange" style="padding: 4px 10px; font-size: 0.75rem;" onclick="showToast(\`Refunded ${formatMoney(item.price)} to ${sale.payment_method}\`, 'success')">Refund Item</button></td>
         </tr>`;
@@ -1483,10 +1483,7 @@
     let isClockedIn = false;
     let shiftInterval;
     let shiftSeconds = 0;
-    function toggleShiftStatus() {
-      const statusEl = document.getElementById('shiftUserStatus');
-      const timeEl = document.getElementById('shiftTimeTracker');
-      const btn = event.currentTarget;
+    function toggleShiftStatus(btn) {
       if (isClockedIn) {
         clearInterval(shiftInterval);
         isClockedIn = false;
