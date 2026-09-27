@@ -1102,10 +1102,47 @@
       }, 'Stock Adjustment');
     }
 
+    
+    let html5QrCodeNewProduct = null;
+    function scanToNewProduct() {
+      const readerWrap = document.getElementById('newProductScannerWrapper');
+      readerWrap.style.display = 'block';
+      if (!html5QrCodeNewProduct) html5QrCodeNewProduct = new Html5Qrcode("newProductReader");
+
+      html5QrCodeNewProduct.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 100 } },
+        (decodedText) => {
+          playBeep(1760, 0.1);
+          document.getElementById('newBarcode').value = decodedText;
+          stopNewProductScanner();
+          showToast('Barcode scanned!', 'success');
+        },
+        () => {}
+      ).catch(err => {
+        showToast('Camera error: ' + err, 'error');
+        stopNewProductScanner();
+      });
+    }
+
+    function stopNewProductScanner() {
+      if (html5QrCodeNewProduct && html5QrCodeNewProduct.isScanning) {
+        html5QrCodeNewProduct.stop().then(() => {
+          document.getElementById('newProductScannerWrapper').style.display = 'none';
+        }).catch(() => {
+          document.getElementById('newProductScannerWrapper').style.display = 'none';
+        });
+      } else {
+        document.getElementById('newProductScannerWrapper').style.display = 'none';
+      }
+    }
+
+
     function openAddSkuModal() {
       document.getElementById('addSkuModal').classList.add('active');
     }
     function closeAddSkuModal() {
+      stopNewProductScanner();
       document.getElementById('addSkuModal').classList.remove('active');
     }
 
