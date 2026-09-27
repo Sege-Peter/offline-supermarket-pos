@@ -731,8 +731,39 @@
     </div>
   </div>
 
+    <!-- IndexedDB Wrapper -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+  <script>
+    localforage.config({
+      name: 'OfflinePOS',
+      storeName: 'pos_store'
+    });
+    // Migrate localStorage to IndexedDB on startup if needed
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const hasMigrated = await localforage.getItem('migrated_to_idb');
+        if (!hasMigrated) {
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key.startsWith('pos_')) {
+              await localforage.setItem(key, localStorage.getItem(key));
+            }
+          }
+          await localforage.setItem('migrated_to_idb', true);
+          console.log('? Migrated localStorage data to IndexedDB');
+        }
+      } catch (e) {
+        console.error('IndexedDB migration failed', e);
+      }
+    });
+  </script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <!-- Core Scripts -->
   <script src="static/js/pos-engine.js"></script>
+  <script src="static/js/firebase-sync.js"></script>
+  <script src="static/js/live-rates.js"></script>
   <script>
     // System Initialization & State
     let products = JSON.parse(localStorage.getItem('pos_products') || '[]');
@@ -830,7 +861,7 @@
     function quickTender(amt) {
       const input = document.getElementById('tenderedInput');
       if (input) {
-        input.value = amt.toFixed(2);
+        input.value = (amt * (activeCurrency.rate || 1)).toFixed(2);
         renderCart();
       }
     }
@@ -841,7 +872,7 @@
       const total = taxable * 1.08;
       const input = document.getElementById('tenderedInput');
       if (input) {
-        input.value = total.toFixed(2);
+        input.value = (total * (activeCurrency.rate || 1)).toFixed(2);
         renderCart();
       }
     }
@@ -1357,3 +1388,5 @@
   </script>
 </body>
 </html>
+
+

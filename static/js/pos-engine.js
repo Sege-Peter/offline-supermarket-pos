@@ -64,8 +64,9 @@ function setCurrency(code) {
 
 function formatMoney(amount) {
   const num = parseFloat(amount || 0);
+  const converted = num * (activeCurrency.rate || 1);
   const dec = activeCurrency.decimals;
-  const formattedNum = num.toLocaleString(undefined, {
+  const formattedNum = converted.toLocaleString(undefined, {
     minimumFractionDigits: dec,
     maximumFractionDigits: dec
   });
@@ -416,9 +417,10 @@ function renderCart() {
   if (mobCount) mobCount.innerText = `${Math.round(totalItemsCount)} ITEMS`;
   if (mobTotal) mobTotal.innerText = formatMoney(grandTotal);
 
+  const rate = activeCurrency.rate || 1;
   const tenderedVal = tenderedInput ? parseFloat(tenderedInput.value || 0) : 0;
-  const change = Math.max(0, tenderedVal - grandTotal);
-  if (changeEl) changeEl.innerText = formatMoney(change);
+  const changeBase = Math.max(0, (tenderedVal / rate) - grandTotal);
+  if (changeEl) changeEl.innerText = formatMoney(changeBase);
 }
 
 function scrollToPaymentOrCheckout() {
@@ -773,6 +775,7 @@ function processOfflineCheckout(payload) {
   cart = [];
   renderCart();
   showToast(`[OFFLINE MODE] Saved receipt ${receiptNo}`, "success");
+  if(window.backupSaleToFirebase) window.backupSaleToFirebase({receipt_number: receiptNo, items: payload.cart, total: total, amount_tendered: payload.amount_tendered});
 }
 
 const OFFLINE_SEED_CATALOG = {
