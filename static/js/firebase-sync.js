@@ -61,6 +61,6 @@ if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
   window.syncOfflineQueue();
 
 } else {
-  console.warn("<i class="fas fa-exclamation-triangle"></i> Firebase is not configured. Please add your credentials to static/js/firebase-sync.js");
+  console.warn("<i class='fas fa-exclamation-triangle'></i> Firebase is not configured. Please add your credentials to static/js/firebase-sync.js");
   window.backupSaleToFirebase = async function() {}; // No-op
 }

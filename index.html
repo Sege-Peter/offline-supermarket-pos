@@ -17,7 +17,7 @@
        ========================================== -->
   <header class="top-bar">
     <div class="brand-section">
-      <div class="brand-logo-badge"><i class="fas fa-bolt"></i></div>
+      <div class="brand-logo-badge"><i class='fas fa-bolt'></i></div>
       <div class="brand-title">
         METRO<span class="highlight-cyan">POS</span> <span class="highlight-orange" style="font-size: 0.8rem; font-weight: 800;">ENTERPRISE</span>
         <small style="color: var(--text-muted); font-size: 0.75rem; font-weight: 500;">Lane 01 Terminal</small>
@@ -27,7 +27,7 @@
     <div class="top-bar-controls">
       <!-- Currency Switcher -->
       <div class="currency-picker-wrap" title="Change Active Store Currency">
-        <span><i class="fas fa-globe"></i></span>
+        <span><i class='fas fa-globe'></i></span>
         <select id="currencyPicker" onchange="changeCurrency(this.value)">
           <option value="USD">USD ($)</option>
           <option value="EUR">EUR (€)</option>
@@ -48,7 +48,7 @@
       <div class="user-auth-pill" onclick="openAuthModal(null, 'Switch Cashier or Authenticate as Manager:')" title="Click to Switch User / Unlock Admin">
         <span id="currentUserRole" class="user-role-tag cashier">CASHIER</span>
         <span id="currentUserName" style="font-size: 0.85rem; font-weight: 700;">Jane Doe (Lane 01)</span>
-        <span style="font-size: 0.8rem;"><i class="fas fa-lock"></i></span>
+        <span style="font-size: 0.8rem;"><i class='fas fa-lock'></i></span>
       </div>
 
       <!-- System Status Indicators -->
@@ -62,14 +62,14 @@
        2. NAVIGATION TABS
        ========================================== -->
   <nav class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('terminal')"><i class="fas fa-desktop"></i> Lane Register</button>
-    <button class="tab-btn" onclick="switchTab('camera')"><i class="fas fa-camera"></i> Mobile Scanner</button>
-    <button class="tab-btn" onclick="requireAdminTab('dashboard', 'Manager Dashboard')"><i class="fas fa-chart-bar"></i> Dashboard <i class="fas fa-crown"></i></button>
-    <button class="tab-btn" onclick="switchTab('catalog')"><i class="fas fa-box"></i> Inventory & Stock</button>
-    <button class="tab-btn" onclick="switchTab('history')"><i class="fas fa-file-invoice"></i> Sales History</button>
-    <button class="tab-btn" onclick="switchTab('zreport')"><i class="fas fa-print"></i> Z-Report Balancing</button>
-    <button class="tab-btn" onclick="requireAdminTab('settings', 'Store Settings')"><i class="fas fa-cog"></i> Settings <i class="fas fa-crown"></i></button>
-    <button class="tab-btn" onclick="switchTab('architecture')"><i class="fas fa-building-columns"></i> System Architecture</button>
+    <button class="tab-btn active" onclick="switchTab('terminal')"><i class='fas fa-desktop'></i> Lane Register</button>
+    <button class="tab-btn" onclick="switchTab('camera')"><i class='fas fa-camera'></i> Mobile Scanner</button>
+    <button class="tab-btn" onclick="requireAdminTab('dashboard', 'Manager Dashboard')"><i class='fas fa-chart-bar'></i> Dashboard <i class='fas fa-crown'></i></button>
+    <button class="tab-btn" onclick="switchTab('catalog')"><i class='fas fa-box'></i> Inventory & Stock</button>
+    <button class="tab-btn" onclick="switchTab('history')"><i class='fas fa-file-invoice'></i> Sales History</button>
+    <button class="tab-btn" onclick="switchTab('zreport')"><i class='fas fa-print'></i> Z-Report Balancing</button>
+    <button class="tab-btn" onclick="requireAdminTab('settings', 'Store Settings')"><i class='fas fa-cog'></i> Settings <i class='fas fa-crown'></i></button>
+    <button class="tab-btn" onclick="switchTab('architecture')"><i class='fas fa-building-columns'></i> System Architecture</button>
   </nav>
 
   <!-- ==========================================
@@ -82,24 +82,24 @@
       <!-- Quick Barcode Helper Bar -->
       <div class="demo-barcodes">
         <strong style="color: var(--cyan-bright); font-size: 0.75rem; text-transform: uppercase;">Quick Test Items:</strong>
-        <button class="demo-chip" onclick="scanTestBarcode('011110417001')"><i class="fas fa-glass-water"></i> Milk (<span class="chip-price" data-price="1.50">$1.50</span>)</button>
-        <button class="demo-chip" onclick="scanTestBarcode('041520000102')"><i class="fas fa-bread-slice"></i> Bread (<span class="chip-price" data-price="2.20">$2.20</span>)</button>
-        <button class="demo-chip" onclick="scanTestBarcode('4011')"><i class="fas fa-seedling"></i> Bananas (<span class="chip-price" data-price="1.80">$1.80/kg</span>)</button>
-        <button class="demo-chip" onclick="scanTestBarcode('078742351864')"><i class="fas fa-bowl-rice"></i> Basmati Rice (<span class="chip-price" data-price="5.50">$5.50</span>)</button>
-        <button class="demo-chip" onclick="scanTestBarcode('049000028904')"><i class="fas fa-cup-togo"></i> Coke (<span class="chip-price" data-price="1.25">$1.25</span>)</button>
-        <button class="demo-chip" onclick="scanTestBarcode('021130004928')"><i class="fas fa-drumstick-bite"></i> Chicken (<span class="chip-price" data-price="7.90">$7.90/kg</span>)</button>
-        <button class="demo-chip" onclick="scanTestBarcode('011110824106')"><i class="fas fa-egg"></i> Eggs 12pk (<span class="chip-price" data-price="3.40">$3.40</span>)</button>
-        <button class="demo-chip" onclick="scanTestBarcode('4065')"><i class="fas fa-leaf"></i> Peppers (<span class="chip-price" data-price="3.20">$3.20/kg</span>)</button>
+        <button class="demo-chip" onclick="scanTestBarcode('011110417001')"><i class='fas fa-glass-water'></i> Milk (<span class="chip-price" data-price="1.50">$1.50</span>)</button>
+        <button class="demo-chip" onclick="scanTestBarcode('041520000102')"><i class='fas fa-bread-slice'></i> Bread (<span class="chip-price" data-price="2.20">$2.20</span>)</button>
+        <button class="demo-chip" onclick="scanTestBarcode('4011')"><i class='fas fa-seedling'></i> Bananas (<span class="chip-price" data-price="1.80">$1.80/kg</span>)</button>
+        <button class="demo-chip" onclick="scanTestBarcode('078742351864')"><i class='fas fa-bowl-rice'></i> Basmati Rice (<span class="chip-price" data-price="5.50">$5.50</span>)</button>
+        <button class="demo-chip" onclick="scanTestBarcode('049000028904')"><i class='fas fa-cup-togo'></i> Coke (<span class="chip-price" data-price="1.25">$1.25</span>)</button>
+        <button class="demo-chip" onclick="scanTestBarcode('021130004928')"><i class='fas fa-drumstick-bite'></i> Chicken (<span class="chip-price" data-price="7.90">$7.90/kg</span>)</button>
+        <button class="demo-chip" onclick="scanTestBarcode('011110824106')"><i class='fas fa-egg'></i> Eggs 12pk (<span class="chip-price" data-price="3.40">$3.40</span>)</button>
+        <button class="demo-chip" onclick="scanTestBarcode('4065')"><i class='fas fa-leaf'></i> Peppers (<span class="chip-price" data-price="3.20">$3.20/kg</span>)</button>
       </div>
 
       <!-- Cashier Action Bar -->
       <div class="scanner-strip" style="background: var(--bg-panel); padding: 8px 20px;">
-        <button class="tool-btn btn-cyan" onclick="openCatalogModal()"><i class="fas fa-clipboard-list"></i> PLU Catalog (F4)</button>
-        <button class="tool-btn btn-blue" onclick="promptScaleItem()"><i class="fas fa-scale-balanced"></i> Digital Scale (F8)</button>
-        <button class="tool-btn" onclick="openHoldModal()"><i class="fas fa-pause"></i> Park / Hold Cart</button>
-        <button class="tool-btn" onclick="openRecallModal()"><i class="fas fa-play"></i> Recall Cart (<span id="heldCount">0</span>)</button>
-        <button class="tool-btn btn-orange" onclick="openDiscountPrompt()"><i class="fas fa-tag"></i> Coupon / Discount</button>
-        <button class="tool-btn" onclick="kickCashDrawer()"><i class="fas fa-bolt"></i> Kick Drawer</button>
+        <button class="tool-btn btn-cyan" onclick="openCatalogModal()"><i class='fas fa-clipboard-list'></i> PLU Catalog (F4)</button>
+        <button class="tool-btn btn-blue" onclick="promptScaleItem()"><i class='fas fa-scale-balanced'></i> Digital Scale (F8)</button>
+        <button class="tool-btn" onclick="openHoldModal()"><i class='fas fa-pause'></i> Park / Hold Cart</button>
+        <button class="tool-btn" onclick="openRecallModal()"><i class='fas fa-play'></i> Recall Cart (<span id="heldCount">0</span>)</button>
+        <button class="tool-btn btn-orange" onclick="openDiscountPrompt()"><i class='fas fa-tag'></i> Coupon / Discount</button>
+        <button class="tool-btn" onclick="kickCashDrawer()"><i class='fas fa-bolt'></i> Kick Drawer</button>
       </div>
 
       <div class="pos-workspace">
@@ -107,7 +107,7 @@
         <section class="lane-left">
           <div class="scanner-strip">
             <div class="barcode-input-container">
-              <span class="barcode-icon"><i class="fas fa-search"></i></span>
+              <span class="barcode-icon"><i class='fas fa-search'></i></span>
               <input 
                 type="text" 
                 id="barcodeInput" 
@@ -123,7 +123,7 @@
 
           <!-- Active Discount Alert Strip -->
           <div id="discountAlertStrip" style="display: none; background: var(--orange-subtle); border-bottom: 1px solid var(--orange-primary); color: var(--orange-bright); padding: 8px 20px; font-weight: 700; font-size: 0.85rem; justify-content: space-between; align-items: center;">
-            <span><i class="fas fa-tag"></i> Store Coupon Applied: <strong id="discountAlertText">-$0.00</strong></span>
+            <span><i class='fas fa-tag'></i> Store Coupon Applied: <strong id="discountAlertText">-$0.00</strong></span>
             <button onclick="removeDiscount()" style="background: transparent; border: none; color: var(--red-danger); cursor: pointer; font-weight: 800;">Remove</button>
           </div>
 
@@ -175,15 +175,15 @@
             <label class="tender-label">Select Tender Method</label>
             <div class="payment-methods-grid">
               <button class="pay-method-btn active" data-method="CASH" onclick="selectPaymentMethod('CASH')">
-                <span style="font-size: 1.2rem;"><i class="fas fa-money-bill-wave"></i></span>
+                <span style="font-size: 1.2rem;"><i class='fas fa-money-bill-wave'></i></span>
                 <span>Cash</span>
               </button>
               <button class="pay-method-btn" data-method="CARD" onclick="selectPaymentMethod('CARD')">
-                <span style="font-size: 1.2rem;"><i class="fas fa-credit-card"></i></span>
+                <span style="font-size: 1.2rem;"><i class='fas fa-credit-card'></i></span>
                 <span>Card</span>
               </button>
               <button class="pay-method-btn" data-method="MOBILE_MONEY" onclick="selectPaymentMethod('MOBILE_MONEY')">
-                <span style="font-size: 1.2rem;"><i class="fas fa-mobile-screen"></i></span>
+                <span style="font-size: 1.2rem;"><i class='fas fa-mobile-screen'></i></span>
                 <span>Mobile</span>
               </button>
             </div>
@@ -209,7 +209,7 @@
 
             <!-- Primary Checkout Button (Energetic Orange) -->
             <button class="btn-checkout-primary" onclick="performCheckout()">
-              <span><i class="fas fa-bolt"></i> Complete Sale (F12)</span>
+              <span><i class='fas fa-bolt'></i> Complete Sale (F12)</span>
             </button>
 
             <button class="btn-void" onclick="voidCurrentTransaction()">
@@ -225,7 +225,7 @@
       <div style="padding: 24px; max-width: 600px; margin: 0 auto; width: 100%;">
         <div class="settings-section-card">
           <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2 style="font-size: 1.2rem; color: var(--cyan-bright);"><i class="fas fa-camera"></i> Mobile Camera Barcode Scanner</h2>
+            <h2 style="font-size: 1.2rem; color: var(--cyan-bright);"><i class='fas fa-camera'></i> Mobile Camera Barcode Scanner</h2>
             <button class="tool-btn btn-cyan" id="toggleCameraBtn" onclick="toggleCameraScanner()">Start Camera</button>
           </div>
           <p style="font-size: 0.85rem; color: var(--text-muted);">Uses HTML5 video feed to decode 1D UPC/EAN barcodes and 2D QR codes in real-time. Emits standard 1760 Hz cashier audio confirmation on detection.</p>
@@ -242,10 +242,10 @@
       <div style="padding: 24px; max-width: 1200px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 20px;">
         <div class="settings-header-banner">
           <div>
-            <h2 style="font-size: 1.4rem; color: var(--cyan-bright);"><i class="fas fa-chart-bar"></i> Store Manager Performance Dashboard</h2>
+            <h2 style="font-size: 1.4rem; color: var(--cyan-bright);"><i class='fas fa-chart-bar'></i> Store Manager Performance Dashboard</h2>
             <p style="color: var(--text-muted); font-size: 0.85rem;">Live gross sales, margins, order frequency, and inventory stock risk alerts.</p>
           </div>
-          <span class="badge badge-orange"><i class="fas fa-crown"></i> Manager Mode Active</span>
+          <span class="badge badge-orange"><i class='fas fa-crown'></i> Manager Mode Active</span>
         </div>
 
         <!-- 4 KPI Cards -->
@@ -270,7 +270,7 @@
 
         <!-- Top Selling Products Table -->
         <div class="settings-section-card">
-          <h3 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 12px;"><i class="fas fa-trophy"></i> Top Fast-Moving Products</h3>
+          <h3 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 12px;"><i class='fas fa-trophy'></i> Top Fast-Moving Products</h3>
           <table class="cart-table">
             <thead>
               <tr>
@@ -292,7 +292,7 @@
       <div style="padding: 24px; max-width: 1200px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 16px;">
         <div class="settings-header-banner">
           <div>
-            <h2 style="font-size: 1.3rem; color: var(--cyan-bright);"><i class="fas fa-box"></i> Supermarket Inventory Catalog</h2>
+            <h2 style="font-size: 1.3rem; color: var(--cyan-bright);"><i class='fas fa-box'></i> Supermarket Inventory Catalog</h2>
             <p style="color: var(--text-muted); font-size: 0.85rem;">Manage unit prices, stock levels, weighed items, and category tags.</p>
           </div>
           <button class="btn-checkout-primary" style="padding: 10px 18px; font-size: 0.9rem;" onclick="requireAdmin(openAddSkuModal, 'Adding New Product')">+ Add New SKU</button>
@@ -324,10 +324,10 @@
       <div style="padding: 24px; max-width: 1200px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 16px;">
         <div class="settings-header-banner">
           <div>
-            <h2 style="font-size: 1.3rem; color: var(--cyan-bright);"><i class="fas fa-file-invoice"></i> Transaction Sales Ledger & Audit</h2>
+            <h2 style="font-size: 1.3rem; color: var(--cyan-bright);"><i class='fas fa-file-invoice'></i> Transaction Sales Ledger & Audit</h2>
             <p style="color: var(--text-muted); font-size: 0.85rem;">Search past customer orders, inspect line items, and reprint 80mm/58mm receipts.</p>
           </div>
-          <button class="tool-btn btn-cyan" onclick="exportSalesCsv()"><i class="fas fa-download"></i> Export CSV</button>
+          <button class="tool-btn btn-cyan" onclick="exportSalesCsv()"><i class='fas fa-download'></i> Export CSV</button>
         </div>
 
         <div class="settings-section-card" style="padding: 14px;">
@@ -356,10 +356,10 @@
       <div style="padding: 24px; max-width: 800px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 18px;">
         <div class="settings-header-banner">
           <div>
-            <h2 style="font-size: 1.3rem; color: var(--cyan-bright);"><i class="fas fa-print"></i> Daily Z-Report Till Reconciliation</h2>
+            <h2 style="font-size: 1.3rem; color: var(--cyan-bright);"><i class='fas fa-print'></i> Daily Z-Report Till Reconciliation</h2>
             <p style="color: var(--text-muted); font-size: 0.85rem;">Terminal lane cash balancing, float counting, and end-of-shift closing audit.</p>
           </div>
-          <button class="tool-btn btn-orange" onclick="requireAdmin(printZReportSummary, 'Printing Official Z-Report')"><i class="fas fa-print"></i> Print Z-Report</button>
+          <button class="tool-btn btn-orange" onclick="requireAdmin(printZReportSummary, 'Printing Official Z-Report')"><i class='fas fa-print'></i> Print Z-Report</button>
         </div>
 
         <div class="settings-section-card">
@@ -392,24 +392,24 @@
       <div class="settings-container">
         <div class="settings-header-banner">
           <div>
-            <h2 style="font-size: 1.4rem; color: var(--cyan-bright);"><i class="fas fa-cog"></i> Enterprise Store & EPOS Configuration</h2>
+            <h2 style="font-size: 1.4rem; color: var(--cyan-bright);"><i class='fas fa-cog'></i> Enterprise Store & EPOS Configuration</h2>
             <p style="color: var(--text-muted); font-size: 0.85rem;">Configure multi-currency, tax rules, 80mm/58mm EPOS printing, PIN security, and database backups.</p>
           </div>
-          <button class="btn-save-settings" onclick="saveStoreSettingsForm()"><i class="fas fa-save"></i> Save Configuration</button>
+          <button class="btn-save-settings" onclick="saveStoreSettingsForm()"><i class='fas fa-save'></i> Save Configuration</button>
         </div>
 
         <!-- Settings Sub-Navigation -->
         <div class="settings-nav-pills">
-          <button class="settings-pill-btn active" onclick="switchSettingsSection('sec-store')"><i class="fas fa-store"></i> Store Identity</button>
-          <button class="settings-pill-btn" onclick="switchSettingsSection('sec-currency')"><i class="fas fa-exchange-alt"></i> Currency & Tax</button>
-          <button class="settings-pill-btn" onclick="switchSettingsSection('sec-hardware')"><i class="fas fa-print"></i> EPOS Hardware</button>
-          <button class="settings-pill-btn" onclick="switchSettingsSection('sec-security')"><i class="fas fa-lock"></i> PINs & RBAC</button>
-          <button class="settings-pill-btn" onclick="switchSettingsSection('sec-backup')"><i class="fas fa-save"></i> Backup & Restore</button>
+          <button class="settings-pill-btn active" onclick="switchSettingsSection('sec-store')"><i class='fas fa-store'></i> Store Identity</button>
+          <button class="settings-pill-btn" onclick="switchSettingsSection('sec-currency')"><i class='fas fa-exchange-alt'></i> Currency & Tax</button>
+          <button class="settings-pill-btn" onclick="switchSettingsSection('sec-hardware')"><i class='fas fa-print'></i> EPOS Hardware</button>
+          <button class="settings-pill-btn" onclick="switchSettingsSection('sec-security')"><i class='fas fa-lock'></i> PINs & RBAC</button>
+          <button class="settings-pill-btn" onclick="switchSettingsSection('sec-backup')"><i class='fas fa-save'></i> Backup & Restore</button>
         </div>
 
         <!-- Section 1: Store Identity -->
         <div id="sec-store" class="settings-section-card">
-          <h3 style="color: var(--cyan-bright); font-size: 1.05rem;"><i class="fas fa-store"></i> Store Identity & Receipt Headers</h3>
+          <h3 style="color: var(--cyan-bright); font-size: 1.05rem;"><i class='fas fa-store'></i> Store Identity & Receipt Headers</h3>
           <div class="settings-grid-form">
             <div class="form-group">
               <label class="form-label">Store / Supermarket Name</label>
@@ -444,7 +444,7 @@
 
         <!-- Section 2: Currency & Tax -->
         <div id="sec-currency" class="settings-section-card" style="display: none;">
-          <h3 style="color: var(--cyan-bright); font-size: 1.05rem;"><i class="fas fa-exchange-alt"></i> Multi-Currency & Localization Rules</h3>
+          <h3 style="color: var(--cyan-bright); font-size: 1.05rem;"><i class='fas fa-exchange-alt'></i> Multi-Currency & Localization Rules</h3>
           <div class="settings-grid-form">
             <div class="form-group">
               <label class="form-label">Default Operating Currency</label>
@@ -483,7 +483,7 @@
 
         <!-- Section 3: EPOS Hardware -->
         <div id="sec-hardware" class="settings-section-card" style="display: none;">
-          <h3 style="color: var(--cyan-bright); font-size: 1.05rem;"><i class="fas fa-print"></i> EPOS Thermal Printer & Peripherals</h3>
+          <h3 style="color: var(--cyan-bright); font-size: 1.05rem;"><i class='fas fa-print'></i> EPOS Thermal Printer & Peripherals</h3>
           <div class="settings-grid-form">
             <div class="form-group">
               <label class="form-label">Default Thermal Paper Width</label>
@@ -519,7 +519,7 @@
 
         <!-- Section 4: PINs & Security -->
         <div id="sec-security" class="settings-section-card" style="display: none;">
-          <h3 style="color: var(--cyan-bright); font-size: 1.05rem;"><i class="fas fa-lock"></i> Security, PINs & Role Access Control</h3>
+          <h3 style="color: var(--cyan-bright); font-size: 1.05rem;"><i class='fas fa-lock'></i> Security, PINs & Role Access Control</h3>
           <div class="settings-grid-form">
             <div class="form-group">
               <label class="form-label">Manager Master PIN Code</label>
@@ -541,13 +541,13 @@
 
         <!-- Section 5: Backup & Maintenance -->
         <div id="sec-backup" class="settings-section-card" style="display: none;">
-          <h3 style="color: var(--cyan-bright); font-size: 1.05rem;"><i class="fas fa-save"></i> Database Backup, Export & Factory Reset</h3>
+          <h3 style="color: var(--cyan-bright); font-size: 1.05rem;"><i class='fas fa-save'></i> Database Backup, Export & Factory Reset</h3>
           <p style="font-size: 0.85rem; color: var(--text-muted);">Safeguard your catalog, sales logs, and cashier sessions or restore to clean state.</p>
           <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-            <button class="tool-btn btn-cyan" onclick="downloadBackupJson()"><i class="fas fa-download"></i> Download Full JSON Backup</button>
-            <button class="tool-btn btn-orange" onclick="document.getElementById('importFileInput').click()"><i class="fas fa-upload"></i> Restore from JSON</button>
+            <button class="tool-btn btn-cyan" onclick="downloadBackupJson()"><i class='fas fa-download'></i> Download Full JSON Backup</button>
+            <button class="tool-btn btn-orange" onclick="document.getElementById('importFileInput').click()"><i class='fas fa-upload'></i> Restore from JSON</button>
             <input type="file" id="importFileInput" style="display: none;" accept=".json" onchange="restoreBackupJson(event)">
-            <button class="tool-btn" style="color: var(--red-danger); border-color: var(--red-danger);" onclick="resetFactoryDemoData()"><i class="fas fa-exclamation-triangle"></i> Reset Factory Demo Data</button>
+            <button class="tool-btn" style="color: var(--red-danger); border-color: var(--red-danger);" onclick="resetFactoryDemoData()"><i class='fas fa-exclamation-triangle'></i> Reset Factory Demo Data</button>
           </div>
         </div>
       </div>
@@ -556,7 +556,7 @@
     <!-- TAB 8: ARCHITECTURE VIEW -->
     <div id="tab-architecture" class="tab-panel">
       <div style="padding: 24px; max-width: 1000px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 20px;">
-        <h2 style="color: var(--cyan-bright);"><i class="fas fa-building-columns"></i> System Architecture & Dual-Engine Stack</h2>
+        <h2 style="color: var(--cyan-bright);"><i class='fas fa-building-columns'></i> System Architecture & Dual-Engine Stack</h2>
         <div class="settings-section-card">
           <h3 style="color: var(--orange-bright);">Full-Stack Resilience Topology</h3>
           <pre style="background: var(--bg-input); padding: 16px; border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 0.82rem; color: var(--cyan-bright); overflow-x: auto;">
@@ -594,7 +594,7 @@
       <span class="mobile-bar-total" id="mobBarTotal">$0.00</span>
     </div>
     <button class="btn-checkout-primary mobile-bar-btn" onclick="scrollToPaymentOrCheckout()">
-      <span><i class="fas fa-bolt"></i> Pay (F12)</span>
+      <span><i class='fas fa-bolt'></i> Pay (F12)</span>
     </button>
   </div>
 
@@ -605,7 +605,7 @@
   <div id="receiptModal" class="modal-backdrop">
     <div class="receipt-modal-container">
       <div class="receipt-modal-header">
-        <h3><i class="fas fa-receipt"></i> EPOS Thermal Receipt</h3>
+        <h3><i class='fas fa-receipt'></i> EPOS Thermal Receipt</h3>
         <div class="paper-width-switch">
           <button class="paper-width-btn active" data-width="80mm" onclick="setReceiptPaperWidth('80mm')">80mm</button>
           <button class="paper-width-btn" data-width="58mm" onclick="setReceiptPaperWidth('58mm')">58mm</button>
@@ -620,10 +620,10 @@
 
       <div class="receipt-modal-actions">
         <button class="btn-print-action" onclick="printThermalReceipt()">
-          <span><i class="fas fa-print"></i> Print Receipt</span>
+          <span><i class='fas fa-print'></i> Print Receipt</span>
         </button>
         <button class="btn-copy-escpos" onclick="copyEscPosCommands()">
-          <span><i class="fas fa-clipboard-list"></i> ESC/POS Hex</span>
+          <span><i class='fas fa-clipboard-list'></i> ESC/POS Hex</span>
         </button>
         <button class="btn-modal-close" onclick="closeReceiptModal()">Close</button>
       </div>
@@ -635,7 +635,7 @@
        ========================================== -->
   <div id="authModal" class="modal-backdrop">
     <div class="auth-modal-card">
-      <div class="auth-lock-icon"><i class="fas fa-lock"></i></div>
+      <div class="auth-lock-icon"><i class='fas fa-lock'></i></div>
       <h3 class="auth-title">Authorization Required</h3>
       <p class="auth-subtitle" id="authModalSubtitle">Enter PIN to authenticate:</p>
 
@@ -665,8 +665,8 @@
 
       <!-- Quick Demo Role Switchers -->
       <div style="display: flex; gap: 8px; width: 100%; margin-top: 8px;">
-        <button class="tool-btn" style="flex: 1; font-size: 0.75rem; justify-content: center;" onclick="quickLogin('1234')"><i class="fas fa-user"></i> Cashier (1234)</button>
-        <button class="tool-btn btn-orange" style="flex: 1; font-size: 0.75rem; justify-content: center;" onclick="quickLogin('9999')"><i class="fas fa-crown"></i> Manager (9999)</button>
+        <button class="tool-btn" style="flex: 1; font-size: 0.75rem; justify-content: center;" onclick="quickLogin('1234')"><i class='fas fa-user'></i> Cashier (1234)</button>
+        <button class="tool-btn btn-orange" style="flex: 1; font-size: 0.75rem; justify-content: center;" onclick="quickLogin('9999')"><i class='fas fa-crown'></i> Manager (9999)</button>
       </div>
       <button class="tool-btn" style="width: 100%; justify-content: center; font-size: 0.8rem;" onclick="closeAuthModal()">Cancel</button>
     </div>
@@ -678,8 +678,8 @@
   <div id="catalogModal" class="modal-backdrop">
     <div style="background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-lg); width: 750px; max-width: 95vw; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden;">
       <div style="padding: 14px 20px; background: var(--bg-card); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="color: var(--cyan-bright); font-size: 1.1rem;"><i class="fas fa-clipboard-list"></i> Visual Product Catalog (PLU / Barcodes)</h3>
-        <button onclick="closeCatalogModal()" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer;"><i class="fas fa-times"></i></button>
+        <h3 style="color: var(--cyan-bright); font-size: 1.1rem;"><i class='fas fa-clipboard-list'></i> Visual Product Catalog (PLU / Barcodes)</h3>
+        <button onclick="closeCatalogModal()" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer;"><i class='fas fa-times'></i></button>
       </div>
       <div style="padding: 12px 20px; border-bottom: 1px solid var(--border);">
         <input type="text" id="modalSearchInput" class="input-barcode" style="padding: 10px 14px;" placeholder="Filter catalog items..." oninput="filterModalCatalog()">
@@ -693,7 +693,7 @@
        ========================================== -->
   <div id="addSkuModal" class="modal-backdrop">
     <div style="background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-lg); width: 440px; max-width: 90vw; padding: 24px;">
-      <h3 style="color: var(--cyan-bright); margin-bottom: 16px;"><i class="fas fa-box"></i> Add New Product to Inventory</h3>
+      <h3 style="color: var(--cyan-bright); margin-bottom: 16px;"><i class='fas fa-box'></i> Add New Product to Inventory</h3>
       <form onsubmit="saveNewSku(event)" style="display: flex; flex-direction: column; gap: 12px;">
         <div class="form-group">
           <label class="form-label">Barcode / PLU</label>
@@ -908,7 +908,7 @@
     async function kickCashDrawer() {
       kickCashDrawerSignal();
       playBeep(880, 0.1);
-      showToast('<i class="fas fa-bolt"></i> Cash Drawer Solenoid Kicked', 'info');
+      showToast(`<i class='fas fa-bolt'></i> Cash Drawer Solenoid Kicked`, 'info');
     }
 
     function voidCurrentTransaction() {
@@ -941,7 +941,7 @@
           <small style="color: var(--cyan-primary); font-family: var(--font-mono);">${p.barcode}</small>
           <div style="display: flex; justify-content: space-between; width: 100%; margin-top: 4px;">
             <span style="font-weight: 800; color: var(--cyan-bright);">${formatMoney(p.price)}</span>
-            <span style="font-size: 0.75rem; color: var(--text-muted);">${p.is_weighed ? '<i class="fas fa-scale-balanced"></i> kg' : '<i class="fas fa-tag"></i> ea'}</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">${p.is_weighed ? `<i class='fas fa-scale-balanced'></i> kg` : `<i class='fas fa-tag'></i> ea`}</span>
           </div>
         `;
         grid.appendChild(div);
@@ -1008,9 +1008,9 @@
           <td>${p.category}</td>
           <td>${formatMoney(p.price)}</td>
           <td style="color: ${isLow ? 'var(--red-danger)' : 'var(--green-success)'}; font-weight: bold;">
-            ${p.stock} ${p.is_weighed ? p.unit : 'units'} ${isLow ? '<i class="fas fa-exclamation-triangle"></i> LOW' : ''}
+            ${p.stock} ${p.is_weighed ? p.unit : 'units'} ${isLow ? `<i class='fas fa-exclamation-triangle'></i> LOW` : ''}
           </td>
-          <td>${p.is_weighed ? '<i class="fas fa-scale-balanced"></i> Weighed' : '<i class="fas fa-tag"></i> Packaged'}</td>
+          <td>${p.is_weighed ? `<i class='fas fa-scale-balanced'></i> Weighed` : `<i class='fas fa-tag'></i> Packaged`}</td>
           <td>
             <button class="demo-chip" onclick="adjustStockPrompt(${idx})">Stock +/-</button>
           </td>
@@ -1119,7 +1119,7 @@
           <td>${formatMoney(sale.subtotal)}</td>
           <td style="font-weight: 800; color: var(--cyan-bright);">${formatMoney(sale.total)}</td>
           <td>
-            <button class="tool-btn btn-cyan" style="padding: 4px 10px; font-size: 0.75rem;" onclick="reprintPastSale(${salesHistory.length - 1 - revIdx})"><i class="fas fa-print"></i> Reprint</button>
+            <button class="tool-btn btn-cyan" style="padding: 4px 10px; font-size: 0.75rem;" onclick="reprintPastSale(${salesHistory.length - 1 - revIdx})"><i class='fas fa-print'></i> Reprint</button>
           </td>
         `;
         tbody.appendChild(tr);
