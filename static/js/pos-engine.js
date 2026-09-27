@@ -358,7 +358,7 @@ function renderCart() {
       <tr>
         <td colspan="5">
           <div class="cart-empty">
-            <div class="cart-empty-icon">🛒</div>
+            <div class="cart-empty-icon"><i class="fas fa-shopping-cart"></i></div>
             <p>Scan a barcode or press <strong>F4</strong> for product catalog</p>
           </div>
         </td>
@@ -398,7 +398,7 @@ function renderCart() {
       </td>
       <td style="font-weight: 800; font-family: var(--font-mono); color: var(--cyan-bright);">${formatMoney(lineTotal)}</td>
       <td>
-        <button class="btn-remove" onclick="removeFromCart(${index})" title="Remove">✕</button>
+        <button class="btn-remove" onclick="removeFromCart(${index})" title="Remove"><i class="fas fa-times"></i></button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -674,7 +674,7 @@ function copyEscPosCommands() {
   if (!currentReceiptData) return;
   const hexSample = `1B 40 1B 61 01 1B 45 01 4D 45 54 52 4F 20 46 52 45 53 48 0A 1B 45 00 1B 61 00 ... 1D 56 42 00 1B 70 00 19 FA`;
   navigator.clipboard.writeText(hexSample);
-  showToast("📋 Raw ESC/POS bytes copied to clipboard", "info");
+  showToast("<i class="fas fa-clipboard-list"></i> Raw ESC/POS bytes copied to clipboard", "info");
 }
 
 function closeReceiptModal() {

@@ -11,7 +11,7 @@
         }
       });
       if (updated) {
-        console.log('✅ Real-time currency rates updated successfully.');
+        console.log('<i class="fas fa-check-circle"></i> Real-time currency rates updated successfully.');
         // Re-render UI to reflect new rates
         if (typeof renderCart === 'function') renderCart();
         if (typeof renderCatalog === 'function') renderCatalog();
@@ -24,7 +24,7 @@
       }
     }
   } catch (err) {
-    console.warn('⚠️ Could not fetch live exchange rates. Using fallback/offline rates.', err);
+    console.warn('<i class="fas fa-exclamation-triangle"></i> Could not fetch live exchange rates. Using fallback/offline rates.', err);
   }
 }
 
